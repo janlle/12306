@@ -9,7 +9,7 @@ URLS = {
         "params": {"username": "", "password": "", "appid": "otn", "answer": ""}
     },
     "validate_captcha": {
-        "request_url": "https://kyfw.12306.cn/passport/captcha/captcha-check?callback=jQuery19105088306341494593_{}&answer={}&rand=sjrand&login_site=E&_={}",
+        "request_url": "https://kyfw.12306.cn/passport/captcha/captcha-check?answer={}&rand=sjrand&login_site=E&_={}",
         "method": "get",
         "Content-Type": "",
         "page": "https://kyfw.12306.cn/otn/resources/login.html",

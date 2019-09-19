@@ -2,14 +2,31 @@
 import config.urls as urls
 import tickst_config as config
 import util.logger as logger
-import time
+from urllib import parse
 import util.app_util as util
 import requests
 from fake_useragent import UserAgent
 from util.net_util import Http
 from verify import verify_code
+import urllib3
 
 log = logger.Logger(__name__)
+urllib3.disable_warnings()
+
+"""
+headers = {
+    "Referer": "https://kyfw.12306.cn/otn/resources/login.html",
+    "Sec-Fetch-Mode": "no-cors",
+    "Sec-Fetch-Site": "same-origin",
+    "Accept": "*/*",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
+}
+"""
+
+headers = {
+    "Cookie": "_passport_session=677a797721a74720af6bb52c808933b92456; _passport_ct=15fa567abc3b416d88270c9367cd624at9519; _jc_save_wfdc_flag=dc; RAIL_DEVICEID=cqB4pPFnBKE85FlMa0qFSZj5DLtacLUcXIq5-8b8nfCRoBzn4Lo9WcOkLHxM9xLp0LL2kYq59jad3r0PbJWeP75uNjgHVqhOtz1a6-2Xb1x1sQq17wQbMirB22UogoIPCRK41j-80NxOI7B8SFeNNWmx-IMRXNIM; RAIL_EXPIRATION=1568956001186; _jc_save_fromStation=%u5E7F%u5DDE%2CGZQ; _jc_save_toDate=2019-09-18; _jc_save_toStation=%u97F6%u5173%2CSNQ; _jc_save_fromDate=2019-09-30; BIGipServerpool_passport=250413578.50215.0000; route=9036359bb8a8a461c164a04f8f50b252; BIGipServerotn=602931722.64545.0000"
+}
 
 
 class Login(object):
@@ -17,44 +34,53 @@ class Login(object):
     def __init__(self):
         self.account, self.password = config.ACCOUNT, config.PASSWORD
         self.http = Http(timeout=15, retry=3)
+        self.answer = ""
 
     def login(self):
         if not self.account or not self.password:
             log.warning("请完善账号或密码信息!")
             return
         login_count = 0
+        self.check_verify_code()
         params = urls.URLS.get("login").get("params")
         params["username"] = self.account
         params["password"] = self.password
-        params["answer"] = "187%2C50%2C187%2C114%2C40%2C38"
+        params["answer"] = self.answer
 
-        # res = http.Http().post(urls.URLS.get("login").get("request_url"), data=params)
+        # 登陆
+        res = self.http.post(urls.URLS.get("login").get("request_url"), body=params, headers=headers)
 
-        header = {
-            "User-Agent": UserAgent().random,
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Cookie": "_passport_session=5ad8c0f4192e47919aeb3aed72ff8c710927; _passport_ct=8504f917798945fa941176c7aa52161ct7936; _jc_save_wfdc_flag=dc; RAIL_DEVICEID=cqB4pPFnBKE85FlMa0qFSZj5DLtacLUcXIq5-8b8nfCRoBzn4Lo9WcOkLHxM9xLp0LL2kYq59jad3r0PbJWeP75uNjgHVqhOtz1a6-2Xb1x1sQq17wQbMirB22UogoIPCRK41j-80NxOI7B8SFeNNWmx-IMRXNIM; RAIL_EXPIRATION=1568956001186; _jc_save_fromStation=%u5E7F%u5DDE%2CGZQ; BIGipServerpool_passport=367854090.50215.0000; route=9036359bb8a8a461c164a04f8f50b252; BIGipServerotn=1173357066.50210.0000; _jc_save_toStation=%u97F6%u5173%2CSNQ; _jc_save_toDate=2019-09-18; _jc_save_fromDate=2019-09-30"
-        }
-
-        res = requests.post(urls.URLS.get("login").get("request_url"), params, headers=header, verify=False)
-        print(urls.URLS.get("login").get("request_url"))
         print(str(res.content, encoding="utf-8"))
         # while True:
         #     requests.post("http://125.90.206.248/passport/web/login")
         #     time.sleep(0.5)
         #     login_count += 1
 
-    @staticmethod
     def check_verify_code(self):
-        answer = ""
-        url = urls.URLS.get("validate_captcha").get("request_url").format(util.timestamp(), answer, util.timestamp())
-        pass
+        """校验验证码"""
+
+        # 获取一个图片验证码
+        base64_code = self.get_verify_code()
+
+        # 获取验证码坐标
+        location = verify_code.verify(base64_code)
+        print("答案为: {}".format(location))
+
+        # 识别图片正确选项的坐标
+        self.coordinate(location)
+
+        # 校验验证码 parse.quote(self.answer)
+        url = urls.URLS.get("validate_captcha").get("request_url").format(self.answer, util.timestamp())
+        result = self.http.get(url)
+        print(str(result.content, encoding="utf-8"))
 
     def get_verify_code(self):
+        """获取12306图形验证码的base63数据"""
         url = urls.URLS.get("captcha").get("request_url")
         return self.http.get(url).json()["image"]
 
     def coordinate(self, location=None, auto=True):
+        """获取验证码选项坐标"""
         options = []
         if auto:
             if isinstance(location, list):
@@ -71,44 +97,42 @@ class Login(object):
                         *****************
                         """)
             print("请输入答案的位置")
-        x = 0
-        y = 0
+        x = "0"
+        y = "0"
         result = []
         for option in options:
-            if option == 1:
-                x = "77"
-                y = "40"
-            elif option == 2:
-                x = "77"
-                y = "112"
-            elif option == 3:
-                x = "77"
-                y = "184"
-            elif option == 4:
-                x = "77"
-                y = "256"
-            elif option == 5:
-                x = "149"
-                y = "40"
-            elif option == 6:
-                x = "149"
-                y = "112"
-            elif option == 7:
-                x = "149"
-                y = "184"
-            elif option == 8:
-                x = "149"
-                y = "256"
+            if option == "1":
+                y = "77"
+                x = "40"
+            elif option == "2":
+                y = "77"
+                x = "112"
+            elif option == "3":
+                y = "77"
+                x = "184"
+            elif option == "4":
+                y = "77"
+                x = "256"
+            elif option == "5":
+                y = "149"
+                x = "40"
+            elif option == "6":
+                y = "149"
+                x = "112"
+            elif option == "7":
+                y = "149"
+                x = "184"
+            elif option == "8":
+                y = "149"
+                x = "256"
             result.append(x)
             result.append(y)
-        return ",".join(result)
+        self.answer = ",".join(result)
 
 
 if __name__ == '__main__':
     login = Login()
-    # login.login()
-    res = login.get_verify_code();
-    print(res)
-    verify_code.verify(res)
-
-    # print(login.coordinate(["1", "2", "3"]))
+    login.login()
+    # res = requests.get("https://www.12306.cn/index/", headers)
+    # print(res.cookies)
+    # login.check_verify_code()
