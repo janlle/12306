@@ -1,6 +1,7 @@
 # coding:utf-8
 
 import os
+import time
 
 project_name = "12306"
 
@@ -11,5 +12,10 @@ def get_root_path():
     return current_path[:current_path.find(project_name) + len(project_name)]
 
 
+def timestamp():
+    return int(round(time.time() * 1000))
+
+
 if __name__ == '__main__':
     print(get_root_path())
+    print(timestamp())
