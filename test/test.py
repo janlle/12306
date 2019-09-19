@@ -2,7 +2,6 @@
 # coding:utf-8
 import logging
 from logging.handlers import RotatingFileHandler # 按文件大小滚动备份
-import colorlog  # 控制台日志输入颜色
 import time
 import datetime
 import os
