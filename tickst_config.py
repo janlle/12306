@@ -2,10 +2,10 @@
 
 # ====================== 必填项 ======================
 # 账号
-ACCOUNT = "wealip"
+ACCOUNT = "xxx"
 
 # 密码
-PASSWORD = "Rl1230690"
+PASSWORD = "xxx"
 
 # 出发站
 FROM_STATION = "广州"
