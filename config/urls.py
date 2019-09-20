@@ -21,6 +21,18 @@ URLS = {
         "Content-Type": "",
         "page": "https://kyfw.12306.cn/otn/resources/login.html",
         "params": {}
+    },
+    "ticket_query": {
+        "request_url": "https://kyfw.12306.cn/otn/leftTicket/queryA",
+        "method": "get",
+        "Content-Type": "",
+        "page": "https://kyfw.12306.cn/otn/resources/login.html",
+        "params": {
+            "leftTicketDTO.train_date": "",
+            "leftTicketDTO.from_station": "",
+            "leftTicketDTO.to_station": "",
+            "purpose_codes": "",
+        }
     }
 
 }

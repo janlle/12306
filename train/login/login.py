@@ -5,6 +5,7 @@ import util.logger as logger
 from urllib import parse
 import util.app_util as util
 import requests
+import time
 from fake_useragent import UserAgent
 from util.net_util import Http
 from verify import verify_code
@@ -41,20 +42,30 @@ class Login(object):
             log.warning("请完善账号或密码信息!")
             return
         login_count = 0
-        self.check_verify_code()
-        params = urls.URLS.get("login").get("params")
-        params["username"] = self.account
-        params["password"] = self.password
-        params["answer"] = self.answer
+        while True:
+            login_count += 1
+            self.check_verify_code()
+            params = urls.URLS.get("login").get("params")
+            params["username"] = self.account
+            params["password"] = self.password
+            params["answer"] = self.answer
 
-        # 登陆
-        res = self.http.post(urls.URLS.get("login").get("request_url"), body=params, headers=headers)
+            # 登陆
+            try:
+                res = self.http.post(urls.URLS.get("login").get("request_url"), body=params, headers=headers)
 
-        print(str(res.content, encoding="utf-8"))
-        # while True:
-        #     requests.post("http://125.90.206.248/passport/web/login")
-        #     time.sleep(0.5)
-        #     login_count += 1
+                # log.info(str(res.content, encoding="utf-8"))
+                content_type = res.headers.get("Content-Type")
+                log.info(content_type)
+                if content_type == "application/json" and res.json()["result_code"] == 4:
+                    log.info("登陆成功!登陆次数: {}".format(login_count))
+                    break
+                elif res.headers.get("Content-Type") == "text/html":
+                    log.error("登陆失败!")
+
+                time.sleep(3)
+            except Exception as e:
+                log.error(e)
 
     def check_verify_code(self):
         """校验验证码"""
@@ -64,7 +75,7 @@ class Login(object):
 
         # 获取验证码坐标
         location = verify_code.verify(base64_code)
-        print("答案为: {}".format(location))
+        log.info("答案为: {}".format(location))
 
         # 识别图片正确选项的坐标
         self.coordinate(location)
@@ -72,7 +83,7 @@ class Login(object):
         # 校验验证码 parse.quote(self.answer)
         url = urls.URLS.get("validate_captcha").get("request_url").format(self.answer, util.timestamp())
         result = self.http.get(url)
-        print(str(result.content, encoding="utf-8"))
+        log.info(str(result.content, encoding="utf-8"))
 
     def get_verify_code(self):
         """获取12306图形验证码的base63数据"""
@@ -133,6 +144,7 @@ class Login(object):
 if __name__ == '__main__':
     login = Login()
     login.login()
+    a = "hello"
+    b = "hello"
+    # print(a == b)
     # res = requests.get("https://www.12306.cn/index/", headers)
-    # print(res.cookies)
-    # login.check_verify_code()
