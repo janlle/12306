@@ -2,7 +2,6 @@
 import config.urls as urls
 import tickst_config as config
 import util.logger as logger
-from urllib import parse
 import util.app_util as util
 import requests
 import time
@@ -13,17 +12,6 @@ import urllib3
 
 log = logger.Logger(__name__)
 urllib3.disable_warnings()
-
-"""
-headers = {
-    "Referer": "https://kyfw.12306.cn/otn/resources/login.html",
-    "Sec-Fetch-Mode": "no-cors",
-    "Sec-Fetch-Site": "same-origin",
-    "Accept": "*/*",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Accept-Language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
-}
-"""
 
 headers = {
     "Cookie": "_passport_session=677a797721a74720af6bb52c808933b92456; _passport_ct=15fa567abc3b416d88270c9367cd624at9519; _jc_save_wfdc_flag=dc; RAIL_DEVICEID=cqB4pPFnBKE85FlMa0qFSZj5DLtacLUcXIq5-8b8nfCRoBzn4Lo9WcOkLHxM9xLp0LL2kYq59jad3r0PbJWeP75uNjgHVqhOtz1a6-2Xb1x1sQq17wQbMirB22UogoIPCRK41j-80NxOI7B8SFeNNWmx-IMRXNIM; RAIL_EXPIRATION=1568956001186; _jc_save_fromStation=%u5E7F%u5DDE%2CGZQ; _jc_save_toDate=2019-09-18; _jc_save_toStation=%u97F6%u5173%2CSNQ; _jc_save_fromDate=2019-09-30; BIGipServerpool_passport=250413578.50215.0000; route=9036359bb8a8a461c164a04f8f50b252; BIGipServerotn=602931722.64545.0000"

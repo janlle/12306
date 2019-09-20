@@ -1,10 +1,9 @@
 # coding:utf-8
 
-import pathlib
-
-import numpy as np
-import requests, base64, cv2, hashlib, os
-import scipy.fftpack
+import base64
+import hashlib
+import os
+import requests
 import util.logger as logger
 
 log = logger.Logger(__name__)
@@ -31,17 +30,7 @@ def del_image(path):
             del_image(path_file)
 
 
-def get_text(img, offset=0):
-    # 得到图像中的文本部分
-    return img[3:22, 120 + offset:177 + offset]
-
-
 if __name__ == '__main__':
     # del_image(PATH)
     # download_image(count=5)
-    # texts, imgs = load_data()
-    # print(texts.shape)
-    # print(imgs.shape)
-    # imgs = imgs.reshape(-1, 8)
-    # print(np.unique(imgs, axis=0).shape)
     pass

@@ -4,8 +4,9 @@ import datetime
 import prettytable
 import config.stations as stations
 import config.urls as urls
-from train.ticket.ticket import Ticket
+from train.ticket import Ticket
 from util.net_util import api
+from colorama import Fore
 
 ticket_data_index = {
     # 车次: 3
@@ -72,17 +73,11 @@ def search_stack(from_station, to_station, purpose="ADULT",
         body = response.json()
         if body['httpstatus'] == 200:
             result = body['data']['result']
-    return result
+    return decode_data(result, purpose)
 
 
 def decode_data(tickets_list, purpose=None):
     """解析起始站"""
-    table = prettytable.PrettyTable()
-    table.field_names = Ticket().get_display_title()
-    table.align = 'l'
-    table.valign = 't'
-    table.padding_width = 2
-    tickets = []
     for ticket_line in tickets_list:
         ticket_item = ticket_line.split('|')
         ticket = Ticket()
@@ -117,11 +112,38 @@ def decode_data(tickets_list, purpose=None):
         ticket.mark = ticket_item[ticket_data_index.get("INDEX_TRAIN_MARK")]
         ticket.secret_str = ticket_item[ticket_data_index.get("INDEX_SECRET_STR")]
         ticket.start_date = ticket_item[ticket_data_index.get("INDEX_START_DATE")]
-        tickets.append(ticket)
-        table.add_row(ticket.get_display_field())
+        yield ticket
+
+
+def show_tickets(tickets):
+    table = prettytable.PrettyTable()
+    table.field_names = ["车次", "车站", "时间", "历时", "商务特等座", "一等座", "二等座", "高级软卧", "软卧", "动卧", "硬卧", "软座", "硬座", "无座",
+                         "其他", "备注"]
+    table.align = 'l'
+    table.padding_width = 2
+    for ticket in tickets:
+        table.add_row([ticket.train_no,
+                       ' - '.join([Fore.BLUE + ticket.from_station + Fore.RESET,
+                                   Fore.BLACK + ticket.to_station + Fore.RESET]),
+                       ' - '.join(
+                           [Fore.BLUE + ticket.leave_time + Fore.RESET,
+                            Fore.BLACK + ticket.arrive_time + Fore.RESET]),
+                       ticket.total_consume,
+                       ticket.business_seat or '-',
+                       ticket.first_class_seat or '-',
+                       ticket.second_class_seat or '-',
+                       ticket.advanced_soft_sleep or '-',
+                       ticket.soft_sleep or '-',
+                       ticket.move_sleep or '-',
+                       ticket.hard_sleep or '-',
+                       ticket.soft_seat or '-',
+                       ticket.hard_seat or '-',
+                       ticket.no_seat or '-',
+                       ticket.other or '-',
+                       ticket.mark or '-'])
     print(table)
-    return ticket
 
 
 if __name__ == '__main__':
     res = search_stack('广州', '武昌')
+    show_tickets(res)

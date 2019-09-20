@@ -72,7 +72,7 @@ def verify(base64_code):
 
     text_list = []
     # 识别文字
-    model = models.load_model(util.get_root_path() + os.path.sep + 'model.v2.0.h5')
+    model = models.load_model(util.get_root_path() + os.path.sep + 'model' + os.path.sep + 'model.v2.0.h5')
     label = model.predict(text)
     label = label.argmax()
     text = verify_titles[label]
@@ -93,7 +93,7 @@ def verify(base64_code):
         text_list.append(text)
     log.info("题目为: {}".format(text_list))
     # 加载图片分类器
-    model = models.load_model(util.get_root_path() + os.path.sep + '12306.image.model.h5')
+    model = models.load_model(util.get_root_path() + os.path.sep + 'model' + os.path.sep + '12306.image.model.h5')
     labels = model.predict(captcha_item)
     labels = labels.argmax(axis=1)
     results = []
