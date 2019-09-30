@@ -21,6 +21,7 @@ class Order(object):
     def __init__(self):
         self.order_url = urls.URLS.get('submit_order')
         self.passenger = urls.URLS.get('passenger_url')
+        self.check_order_info = urls.URLS.get('check_order_info')
 
     def prepare(self):
         pass
@@ -38,6 +39,14 @@ class Order(object):
         res = api.post(submit_url, ticket_params, headers=headers)
         print(res.status_code)
         print(res.json())
+
+    def check_order(self):
+        request_url = self.check_order_info.get('request_url')
+        request_params = self.check_order_info.get('params')
+        request_params['passengerTicketStr'] = ''
+        request_params['oldPassengerStr'] = ''
+        request_params['REPEAT_SUBMIT_TOKEN'] = ''
+        pass
 
     def get_passenger(self, name=None):
         """获取账号的乘车人信息"""
