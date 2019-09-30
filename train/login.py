@@ -41,8 +41,6 @@ class Login(object):
             # 登陆
             try:
                 res = self.http.post(urls.URLS.get("login").get("request_url"), body=params, headers=headers)
-
-                # log.info(str(res.content, encoding="utf-8"))
                 content_type = res.headers.get("Content-Type")
                 log.info(content_type)
                 if content_type == "application/json" and res.json()["result_code"] == 4:
@@ -86,7 +84,6 @@ class Login(object):
                 options = location
             else:
                 options = location.split(",")
-
         else:
             print(u"""
                         *****************
@@ -95,7 +92,8 @@ class Login(object):
                         | 5 | 6 | 7 | 8 |
                         *****************
                         """)
-            print("请输入答案的位置")
+            res = input("请输入答案的位置: ")
+            options = res.split(',')
         x = "0"
         y = "0"
         result = []
@@ -130,9 +128,10 @@ class Login(object):
 
 
 if __name__ == '__main__':
-    login = Login()
-    login.login()
-    a = "hello"
-    b = "hello"
-    # print(a == b)
-    # res = requests.get("https://www.12306.cn/index/", headers)
+    # login = Login()
+    # login.login()
+    session = requests.Session()
+
+    print(session.cookies.get_dict())
+    res = session.get('https://www.12306.cn/index/')
+    print(session.cookies.get_dict())
