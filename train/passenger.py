@@ -18,21 +18,10 @@ class Passenger(object):
         self._mobile_no = '',
         self._phone_no = '',
         self._email = '',
-        self._address = '',
-        self._postalcode = '',
         self._first_letter = '',
-        self._recordCount = '',
         self._total_times = '',
         self._index_id = '',
         self._allEncStr = '',
-        self._isAdult = '',
-        self._isYongThan10 = '',
-        self._isYongThan14 = '',
-        self._isOldThan60 = '',
-        self._gat_born_date = '',
-        self._gat_valid_date_start = '',
-        self._gat_valid_date_end = '',
-        self._gat_version = ''
 
     @property
     def passenger_name(self):
@@ -147,36 +136,12 @@ class Passenger(object):
         self._email = value
 
     @property
-    def address(self):
-        return self._address
-
-    @address.setter
-    def address(self, value):
-        self._address = value
-
-    @property
-    def postalcode(self):
-        return self._postalcode
-
-    @postalcode.setter
-    def postalcode(self, value):
-        self._postalcode = value
-
-    @property
     def first_letter(self):
         return self._first_letter
 
     @first_letter.setter
     def first_letter(self, value):
         self._first_letter = value
-
-    @property
-    def recordCount(self):
-        return self._recordCount
-
-    @recordCount.setter
-    def recordCount(self, value):
-        self._recordCount = value
 
     @property
     def total_times(self):
@@ -194,19 +159,36 @@ class Passenger(object):
     def index_id(self, value):
         self._index_id = value
 
+    @property
+    def allEncStr(self):
+        return self._allEncStr
+
+    @allEncStr.setter
+    def allEncStr(self, value):
+        self._allEncStr = value
+
     def __str__(self):
         return '[name: %s,' \
                'sex: %s' \
                'birth: %s' \
-               'id: %s' \
+               'id_card: %s' \
                'phone: %s' \
                'email: %s' \
-               'passengerType: %s]' % (self._passenger_name or '',
-                                       self._sex_name or '',
-                                       self._born_date or '',
-                                       self._passenger_id_no or '',
-                                       self._mobile_no or '',
-                                       self._email or '',
-                                       self._passenger_type or '')
+               'passenger_type: %s]' % (self.passenger_name or '',
+                                        self.sex_name or '',
+                                        self.born_date or '',
+                                        self.passenger_id_no or '',
+                                        self.mobile_no or '',
+                                        self.email or '',
+                                        self.passenger_type or '')
 
     __repr__ = __str__
+
+    def old_passenger_str(self):
+        return '%s,%s,%s,%s' % (self.passenger_name or '', self.passenger_type or '', self.passenger_id_type_code or '',
+                                self.passenger_type or '')
+
+    def passenger_ticket_str(self, seat_type, ticket_type):
+        return '%s,%s,%s,%s,%s,%s,%s,%s,%s' % (
+            seat_type, 0, ticket_type, self.passenger_name or '', 1, self.passenger_id_no, self._mobile_no or '', 'N',
+            self.allEncStr or '')
