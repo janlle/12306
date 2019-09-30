@@ -1,12 +1,14 @@
 # coding:utf-8
 
 import datetime
+
 import prettytable
+from colorama import Fore
+
 import config.stations as stations
 import config.urls as urls
 from train.ticket import Ticket
 from util.net_util import api
-from colorama import Fore
 
 ticket_data_index = {
     # 车次: 3
@@ -56,8 +58,9 @@ ticket_data_index = {
 }
 
 
-def search_stack(from_station, to_station, purpose="ADULT",
-                 train_date=(datetime.datetime.now() + datetime.timedelta(days=1)).strftime('%Y-%m-%d')):
+def search_stack(from_station, to_station,
+                 train_date=(datetime.datetime.now() + datetime.timedelta(days=1)).strftime('%Y-%m-%d'),
+                 purpose="ADULT", train_no=None):
     """查询车票"""
     result = []
     params = urls.URLS.get("ticket_query").get("params")
@@ -73,16 +76,19 @@ def search_stack(from_station, to_station, purpose="ADULT",
         body = response.json()
         if body['httpstatus'] == 200:
             result = body['data']['result']
-    return decode_data(result, purpose)
+    return decode_data(result, train_no, purpose)
 
 
-def decode_data(tickets_list, purpose=None):
+def decode_data(tickets_list, train_no, purpose=None):
     """解析起始站"""
+    result = []
     for ticket_line in tickets_list:
         ticket_item = ticket_line.split('|')
         ticket = Ticket()
         ticket.passenger_type = purpose
         ticket.train_no = ticket_item[ticket_data_index.get("INDEX_TRAIN_NO")]
+        if train_no and train_no != ticket.train_no:
+            continue
 
         ticket.start_station = stations.get_by_code(
             ticket_item[ticket_data_index.get("INDEX_TRAIN_START_STATION_CODE")])
@@ -112,7 +118,8 @@ def decode_data(tickets_list, purpose=None):
         ticket.mark = ticket_item[ticket_data_index.get("INDEX_TRAIN_MARK")]
         ticket.secret_str = ticket_item[ticket_data_index.get("INDEX_SECRET_STR")]
         ticket.start_date = ticket_item[ticket_data_index.get("INDEX_START_DATE")]
-        yield ticket
+        result.append(ticket)
+    return result
 
 
 def show_tickets(tickets):
@@ -145,5 +152,8 @@ def show_tickets(tickets):
 
 
 if __name__ == '__main__':
-    res = search_stack('广州', '武昌')
+    res = search_stack('武昌', '长沙', train_no='K81')
+    print(res[0].secret_str)
+    print(res[0].from_station)
+    print(res[0].to_station)
     show_tickets(res)
