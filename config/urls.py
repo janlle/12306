@@ -64,10 +64,15 @@ URLS = {
     },
     'passenger_url': {
         'request_url': 'https://kyfw.12306.cn/otn/confirmPassenger/getPassengerDTOs',
-        'method': 'POST',
+        'method': 'post',
         'params': {
             '_json_att': ''
         }
+    },
+    'confirm_passenger': {
+        'request_url': 'https://kyfw.12306.cn/otn/confirmPassenger/initDc',
+        'method': 'get',
+        'params': {}
     }
 
 }
