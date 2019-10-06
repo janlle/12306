@@ -48,7 +48,7 @@ URLS = {
         }
     },
     'check_order_info': {
-        'request_url': 'https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest',
+        'request_url': 'https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo',
         'method': 'post',
         'page': 'https://kyfw.12306.cn/otn/confirmPassenger/initDc',
         'params': {
@@ -73,6 +73,42 @@ URLS = {
         'request_url': 'https://kyfw.12306.cn/otn/confirmPassenger/initDc',
         'method': 'get',
         'params': {}
+    },
+    'queue_count': {
+        'request_url': 'https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount',
+        'method': 'post',
+        'params': {
+            'train_date': '',
+            'train_no': '',
+            'stationTrainCode': '',
+            'seatType': '',
+            'fromStationTelecode': '',
+            'toStationTelecode': '',
+            'leftTicket': '',
+            'purpose_codes': '',
+            'train_location': '',
+            'REPEAT_SUBMIT_TOKEN': '',
+        }
+    },
+    'confirm_submit': {
+        'request_url': 'https://kyfw.12306.cn/otn/confirmPassenger/confirmSingleForQueue',
+        'method': 'post',
+        'params': {
+            '_json_at': '',
+            'choose_seats': '',
+            'dwAll': '',
+            'key_check_isChange': '',
+            'leftTicketStr': '',
+            'oldPassengerStr': '',
+            'passengerTicketStr': '',
+            'purpose_codes': '',
+            'randCode': '',
+            'REPEAT_SUBMIT_TOKEN': '',
+            'roomType': '',
+            'seatDetailType': '',
+            'train_location': '',
+            'whatsSelect': '',
+        }
     }
 
 }

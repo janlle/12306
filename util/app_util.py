@@ -5,8 +5,11 @@ import time
 import datetime
 import re
 import urllib
+import locale
 
 project_name = "12306"
+GMT_FORMAT = '%a %b %d %Y %H:%M:%S GMT+0800 (中国标准时间)'
+locale.setlocale(locale.LC_CTYPE, 'chinese')
 
 
 def get_root_path():
@@ -39,5 +42,15 @@ def decode_secret_str(code):
     return urllib.parse.unquote(code).replace('\n', '')
 
 
+def get_gmt_time(text):
+    """
+    Fri Oct 025 2019 00:00:00 GMT+0800 (中国标准时间)
+    Sun Oct 06 2019 00:00:00 GMT+0800 (中国标准时间)
+    :param text:
+    :return:
+    """
+    return datetime.datetime.strptime(text, '%Y-%m-%d').strftime(GMT_FORMAT)
+
+
 if __name__ == '__main__':
-    print(check_date('2020-02-26'))
+    print(get_gmt_time('2019-10-06'))
