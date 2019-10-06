@@ -53,4 +53,4 @@ def get_gmt_time(text):
 
 
 if __name__ == '__main__':
-    print(get_gmt_time('2019-10-06'))
+    print(timestamp())

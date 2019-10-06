@@ -2,8 +2,7 @@
 
 import json
 import re
-
-import config.urls as urls
+import time
 import tickst_config as config
 import util.app_util as util
 from train.passenger import Passenger
@@ -14,7 +13,7 @@ from util.net_util import api
 log = Logger(__name__)
 
 headers = {
-    "Cookie": "JSESSIONID=153BC91041E6A05386BD0D58B83D812E; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u6B66%u660C%2CWCN; _jc_save_toStation=%u957F%u6C99%2CCSQ; BIGipServerotn=653263370.24610.0000; RAIL_EXPIRATION=1570596001182; RAIL_DEVICEID=QpBR0-Dv71ZjiueC0I29kqdexiMb1hpE6Wbq-e29e4f7z05D9MvtlaP8tyfVRzQcGEumaHWSRkACeCQm2FfxMPZWpwTWHAm1Yli-8I_uAMnrAh4d-Pxx6O0iqh2o6H4G1fD-dn5F8Xgccjh0fs1M-EqVSFsA82qq; route=6f50b51faa11b987e576cdb301e545c4; _jc_save_toDate=2019-10-06; _jc_save_fromDate=2019-10-15"
+    "Cookie": "JSESSIONID=27466AFB6C5C8712ACD89B4A87D5FAD3; tk=NsS1BZo7ggeHvcMGOLr2q6-sTXOF7XdVweW1W0; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u6B66%u660C%2CWCN; _jc_save_toStation=%u957F%u6C99%2CCSQ; BIGipServerotn=653263370.24610.0000; RAIL_EXPIRATION=1570596001182; RAIL_DEVICEID=QpBR0-Dv71ZjiueC0I29kqdexiMb1hpE6Wbq-e29e4f7z05D9MvtlaP8tyfVRzQcGEumaHWSRkACeCQm2FfxMPZWpwTWHAm1Yli-8I_uAMnrAh4d-Pxx6O0iqh2o6H4G1fD-dn5F8Xgccjh0fs1M-EqVSFsA82qq; route=6f50b51faa11b987e576cdb301e545c4; _jc_save_toDate=2019-10-06; _jc_save_fromDate=2019-10-15; BIGipServerpool_passport=351076874.50215.0000"
 }
 
 
@@ -22,11 +21,12 @@ class Order(object):
 
     def __init__(self):
         self.order_url = urls.URLS.get('submit_order')
-        self.passenger = urls.URLS.get('passenger_url')
+        self.passenger_url = urls.URLS.get('passenger_url')
         self.check_order_info = urls.URLS.get('check_order_info')
         self.confirm_passenger = urls.URLS.get('confirm_passenger')
         self.queue_count = urls.URLS.get('queue_count')
-        self.confirm_submit = urls.URLS.get('confirm_submit')
+        self.confirm_submit_url = urls.URLS.get('confirm_submit_url')
+        self.order_callback_url = urls.URLS.get('order_callback_url')
         self.passenger_name = config.USER[0]
         self.from_station = config.FROM_STATION
         self.to_station = config.TO_STATION
@@ -34,6 +34,8 @@ class Order(object):
         self.seat_type = config.SEAT_TYPE_CODE[0]
         self.date = config.DATE
         self.ticket = search_stack(self.from_station, self.to_station, train_no=self.train_no, train_date=self.date)[0]
+        self.passenger = self.get_passenger(self.passenger_name)[0]
+        self.submit_token = {}
 
     def submit(self):
         """提交车票信息"""
@@ -46,31 +48,29 @@ class Order(object):
         ticket_params['query_to_station_name'] = self.ticket.to_station
         submit_order_response = api.post(submit_url, ticket_params, headers=headers)
         if submit_order_response.status_code == 200 and submit_order_response.json()['httpstatus'] == 200:
-            print(submit_order_response.json())
-            self.check_order(self.passenger_name)
+            log.info(submit_order_response.json())
+            self.check_order()
         else:
             log.info('submit order error')
 
-    def check_order(self, passenger_name):
+    def check_order(self):
         """
         :return:
         """
         # get submit params
-        submit_token = self.get_submit_token()
-
-        # get passenger
-        passenger = self.get_passenger(passenger_name)
+        self.submit_token = self.get_submit_token()
 
         request_url = self.check_order_info.get('request_url')
         request_params = self.check_order_info.get('params')
-        request_params['passengerTicketStr'] = passenger[0].passenger_ticket_str(self.seat_type)
-        request_params['oldPassengerStr'] = passenger[0].old_passenger_str()
-        request_params['REPEAT_SUBMIT_TOKEN'] = submit_token['repeat_submit_token']
+        request_params['passengerTicketStr'] = self.passenger.passenger_ticket_str(self.seat_type)
+        request_params['oldPassengerStr'] = self.passenger.old_passenger_str()
+        request_params['REPEAT_SUBMIT_TOKEN'] = self.submit_token['repeat_submit_token']
 
         check_order_response = api.post(request_url, body=request_params, headers=headers)
-        print(check_order_response.json())
+        log.info(check_order_response.json())
         if check_order_response.status_code == 200 and check_order_response.json()['httpstatus'] == 200:
-            self.get_query_count(submit_token)
+            self.get_query_count()
+            self.confirm_submit()
 
     def get_passenger(self, name=None):
         """
@@ -78,8 +78,8 @@ class Order(object):
         :param name:
         :return:
         """
-        request_url = self.passenger.get('request_url')
-        request_params = self.passenger.get('params')
+        request_url = self.passenger_url.get('request_url')
+        request_params = self.passenger_url.get('params')
         passengers_data = api.post(request_url, request_params, headers=headers)
         if passengers_data.status_code == 200:
             passengers = passengers_data.json()['data']['normal_passengers']
@@ -126,8 +126,6 @@ class Order(object):
         repeat_submit_token = re.search(re_repeat_submit_token, html).group(1)
         ticket_info_for_passenger_form = re.search(re_ticket_info_for_passenger_form, html).group(1)
         order_request_dto = re.search(re_order_request_dto, html).group(1)
-        print(ticket_info_for_passenger_form)
-        print(order_request_dto)
 
         return {
             'repeat_submit_token': repeat_submit_token,
@@ -135,13 +133,12 @@ class Order(object):
             'order_request_params': json.loads(order_request_dto.replace('\'', '\"'))
         }
 
-    def get_query_count(self, submit_token):
+    def get_query_count(self):
         """
         query order count
-        :param submit_token:
         :return:
         """
-        ticket_info_for_passenger_form = submit_token['ticket_info_for_passenger_form']
+        ticket_info_for_passenger_form = self.submit_token['ticket_info_for_passenger_form']
         request_url = self.queue_count.get('request_url')
         request_params = self.queue_count.get('params')
         request_params['train_date'] = util.get_gmt_time(self.date)
@@ -153,7 +150,7 @@ class Order(object):
         request_params['purpose_codes'] = ticket_info_for_passenger_form['purpose_codes']
         request_params['train_location'] = ticket_info_for_passenger_form['train_location']
         request_params['train_no'] = ticket_info_for_passenger_form['queryLeftTicketRequestDTO']['train_no']
-        request_params['REPEAT_SUBMIT_TOKEN'] = submit_token['repeat_submit_token']
+        request_params['REPEAT_SUBMIT_TOKEN'] = self.submit_token['repeat_submit_token']
         query_count = api.post(request_url, body=request_params, headers=headers)
         if query_count.status_code == 200 and query_count.json()['httpstatus'] == 200:
             log.info(query_count.json())
@@ -163,42 +160,43 @@ class Order(object):
     def confirm_submit(self):
         """
         confirm submit order
-
-        _json_at
-        choose_seats
-        dwAll
-        key_check_isChange
-        leftTicketStr
-        oldPassengerStr
-        passengerTicketStr
-        purpose_codes
-        randCode
-        REPEAT_SUBMIT_TOKEN
-        roomType
-        seatDetailType
-        train_location
-        whatsSelect
-
         :return:
         """
-        request_url = self.queue_count.get('request_url')
-        request_params = self.queue_count.get('params')
-        request_params['oldPassengerStr'] = ''
-        request_params[''] = ''
-        request_params[''] = ''
-        request_params[''] = ''
-        request_params[''] = ''
-        request_params[''] = ''
-        request_params[''] = ''
-        request_params[''] = ''
-        request_params[''] = ''
-        request_params[''] = ''
+        ticket_info_for_passenger_form = self.submit_token['ticket_info_for_passenger_form']
+
+        request_url = self.confirm_submit_url.get('request_url')
+        request_params = self.confirm_submit_url.get('params')
+        request_params['oldPassengerStr'] = self.passenger.old_passenger_str()
+        request_params['passengerTicketStr'] = self.passenger.passenger_ticket_str(self.seat_type)
+        request_params['purpose_codes'] = ticket_info_for_passenger_form['purpose_codes']
+        request_params['key_check_isChange'] = ticket_info_for_passenger_form['key_check_isChange']
+        request_params['leftTicketStr'] = ticket_info_for_passenger_form['leftTicketStr']
+        request_params['train_location'] = ticket_info_for_passenger_form['train_location']
+        request_params['leftTicketStr'] = ticket_info_for_passenger_form['leftTicketStr']
+        request_params['REPEAT_SUBMIT_TOKEN'] = self.submit_token['repeat_submit_token']
 
         confirm_submit_response = api.post(request_url, body=request_params, headers=headers)
         if confirm_submit_response.status_code == 200:
             log.info(confirm_submit_response.json())
         else:
             log.error('confirm_submit error')
+
+    def order_callback(self):
+        count = 1
+        request_url = self.order_callback_url.get('request_url')
+        # self.submit_token['ticket_info_for_passenger_form']['tour_flag'] or
+        request_url = request_url.format(util.timestamp(), 'dc')
+        order_callback_response = api.get(request_url, headers=headers)
+        if order_callback_response.status_code == 200:
+            response_json = order_callback_response.json()
+            if response_json['data']['orderId']:
+                log.info('抢票成功,请登录12306我的火车票订单支付车票!')
+                return
+            else:
+                time.sleep(1)
+                count += 1
+                log.info('第: {} 次查询'.format(count))
+                self.order_callback()
 
     def __str__(self):
         return '[乘车人: %s, 出发站: %s, 到达站: %s, 车次: %s, 座位: %s, 出发时间: %s %s:00]' % (
@@ -208,5 +206,7 @@ class Order(object):
 
 if __name__ == '__main__':
     order = Order()
-    print(order)
-    order.submit()
+    # log.info(order)
+    # order.submit()
+    log.info('车票购买排队中,请稍后...')
+    order.order_callback()
