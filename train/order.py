@@ -13,7 +13,7 @@ from util.net_util import api
 log = Logger(__name__)
 
 headers = {
-    "Cookie": "JSESSIONID=27466AFB6C5C8712ACD89B4A87D5FAD3; tk=NsS1BZo7ggeHvcMGOLr2q6-sTXOF7XdVweW1W0; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u6B66%u660C%2CWCN; _jc_save_toStation=%u957F%u6C99%2CCSQ; BIGipServerotn=653263370.24610.0000; RAIL_EXPIRATION=1570596001182; RAIL_DEVICEID=QpBR0-Dv71ZjiueC0I29kqdexiMb1hpE6Wbq-e29e4f7z05D9MvtlaP8tyfVRzQcGEumaHWSRkACeCQm2FfxMPZWpwTWHAm1Yli-8I_uAMnrAh4d-Pxx6O0iqh2o6H4G1fD-dn5F8Xgccjh0fs1M-EqVSFsA82qq; route=6f50b51faa11b987e576cdb301e545c4; _jc_save_toDate=2019-10-06; _jc_save_fromDate=2019-10-15; BIGipServerpool_passport=351076874.50215.0000"
+    "Cookie": "tk=dFq75s_bQWzeHius__nffdPCWKZNhX9951W1W0; JSESSIONID=55A508F9FAE2C84049E765085B30D193; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u6B66%u660C%2CWCN; _jc_save_toStation=%u957F%u6C99%2CCSQ; BIGipServerotn=653263370.24610.0000; RAIL_EXPIRATION=1570596001182; RAIL_DEVICEID=QpBR0-Dv71ZjiueC0I29kqdexiMb1hpE6Wbq-e29e4f7z05D9MvtlaP8tyfVRzQcGEumaHWSRkACeCQm2FfxMPZWpwTWHAm1Yli-8I_uAMnrAh4d-Pxx6O0iqh2o6H4G1fD-dn5F8Xgccjh0fs1M-EqVSFsA82qq; route=6f50b51faa11b987e576cdb301e545c4; _jc_save_toDate=2019-10-06; _jc_save_fromDate=2019-10-15; BIGipServerpool_passport=351076874.50215.0000"
 }
 
 
@@ -34,6 +34,7 @@ class Order(object):
         self.seat_type = config.SEAT_TYPE_CODE[0]
         self.date = config.DATE
         self.ticket = search_stack(self.from_station, self.to_station, train_no=self.train_no, train_date=self.date)[0]
+        print(self.get_passenger(self.passenger_name))
         self.passenger = self.get_passenger(self.passenger_name)[0]
         self.submit_token = {}
 
@@ -206,7 +207,7 @@ class Order(object):
 
 if __name__ == '__main__':
     order = Order()
-    # log.info(order)
-    # order.submit()
+    log.info(order)
+    order.submit()
     log.info('车票购买排队中,请稍后...')
     order.order_callback()

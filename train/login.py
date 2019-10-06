@@ -1,29 +1,25 @@
 # coding:utf-8
+
 import config.urls as urls
 import tickst_config as config
 import util.logger as logger
 import util.app_util as util
 import requests
 import time
-from fake_useragent import UserAgent
-from util.net_util import Http
 from verify import verify_code
 import urllib3
+from util.net_util import api
 
 log = logger.Logger(__name__)
 urllib3.disable_warnings()
-
-headers = {
-    "Cookie": "_passport_session=677a797721a74720af6bb52c808933b92456; _passport_ct=15fa567abc3b416d88270c9367cd624at9519; _jc_save_wfdc_flag=dc; RAIL_DEVICEID=cqB4pPFnBKE85FlMa0qFSZj5DLtacLUcXIq5-8b8nfCRoBzn4Lo9WcOkLHxM9xLp0LL2kYq59jad3r0PbJWeP75uNjgHVqhOtz1a6-2Xb1x1sQq17wQbMirB22UogoIPCRK41j-80NxOI7B8SFeNNWmx-IMRXNIM; RAIL_EXPIRATION=1568956001186; _jc_save_fromStation=%u5E7F%u5DDE%2CGZQ; _jc_save_toDate=2019-09-18; _jc_save_toStation=%u97F6%u5173%2CSNQ; _jc_save_fromDate=2019-09-30; BIGipServerpool_passport=250413578.50215.0000; route=9036359bb8a8a461c164a04f8f50b252; BIGipServerotn=602931722.64545.0000"
-}
 
 
 class Login(object):
 
     def __init__(self):
         self.account, self.password = config.ACCOUNT, config.PASSWORD
-        self.http = Http(timeout=15, retry=3)
-        self.answer = ""
+        self.captcha_url = urls.URLS.get('captcha_url')
+        self.answer = ''
 
     def login(self):
         if not self.account or not self.password:
@@ -40,15 +36,14 @@ class Login(object):
 
             # 登陆
             try:
-                res = self.http.post(urls.URLS.get("login").get("request_url"), body=params, headers=headers)
-                content_type = res.headers.get("Content-Type")
-                log.info(content_type)
-                if content_type == "application/json" and res.json()["result_code"] == 4:
+                login_response = api.post(urls.URLS.get("login").get("request_url"), body=params)
+                content_type = login_response.headers.get("Content-Type")
+                if 'application/json' in content_type and login_response.json()['result_code'] == 0:
                     log.info("登陆成功!登陆次数: {}".format(login_count))
+                    print(api.session.cookies.get_dict())
                     break
-                elif res.headers.get("Content-Type") == "text/html":
+                elif login_response.headers.get("Content-Type") == "text/html":
                     log.error("登陆失败!")
-
                 time.sleep(3)
             except Exception as e:
                 log.error(e)
@@ -68,13 +63,13 @@ class Login(object):
 
         # 校验验证码 parse.quote(self.answer)
         url = urls.URLS.get("validate_captcha").get("request_url").format(self.answer, util.timestamp())
-        result = self.http.get(url)
+        result = api.get(url)
         log.info(str(result.content, encoding="utf-8"))
 
     def get_verify_code(self):
         """获取12306图形验证码的base63数据"""
-        url = urls.URLS.get("captcha").get("request_url")
-        return self.http.get(url).json()["image"]
+        url = self.captcha_url.get("request_url")
+        return api.get(url).json()["image"]
 
     def coordinate(self, location=None, auto=True):
         """获取验证码选项坐标"""
@@ -128,10 +123,14 @@ class Login(object):
 
 
 if __name__ == '__main__':
-    # login = Login()
-    # login.login()
-    session = requests.Session()
+    login = Login()
+    login.login()
 
-    print(session.cookies.get_dict())
-    res = session.get('https://www.12306.cn/index/')
-    print(session.cookies.get_dict())
+    # session = requests.Session()
+    # print(session.cookies.get_dict())
+    # res = session.get('https://www.12306.cn/index/')
+    # if res.json():
+    #     print('true')
+    # else:
+    #     print("false")
+    # print(session.cookies.get_dict())
