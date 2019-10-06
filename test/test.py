@@ -7,6 +7,9 @@ import datetime
 import os
 import requests
 from fake_useragent import UserAgent
+from urllib import request
+from urllib import parse
+from http import cookiejar
 
 cur_path = os.path.dirname(os.path.realpath(__file__))  # log_path是存放日志的路径
 log_path = os.path.join(os.path.dirname(cur_path), 'logs')
@@ -21,14 +24,43 @@ log_colors_config = {
     'CRITICAL': 'red',
 }
 
+
+def cookie_test1():
+    # 声明一个CookieJar对象实例来保存cookie
+    cookie = cookiejar.CookieJar()
+    # 利用urllib库中的request的HTTPCookieProcessor对象来创建cookie处理器
+    handler = request.HTTPCookieProcessor(cookie)
+    # 通过handler来构建opener
+    opener = request.build_opener(handler)
+    # 此处的open方法同urllib的urlopen方法，也可以传入request
+    response = opener.open('https://www.12306.cn/index/')
+    for item in cookie:
+        print('Name: {} Value: {}'.format(item.name, item.value))
+
+
+def cookie_test2():
+    # 设置保存cookie的文件，同级目录下的cookie.txt
+    filename = 'c.txt'
+    # 声明一个MozillaCookieJar对象实例来保存cookie，之后写入文件
+    cookie = cookiejar.MozillaCookieJar(filename)
+    # 利用urllib库的HTTPCookieProcessor对象来创建cookie处理器
+    handler = request.HTTPCookieProcessor(cookie)
+    # 通过handler来构建opener
+    opener = request.build_opener(handler)
+    # 创建一个请求，原理同urllib2的urlopen
+    response = opener.open("http://www.12306.cn")
+    # 保存cookie到文件
+    cookie.save(ignore_discard=True, ignore_expires=True)
+
+
+def cookie_test3():
+    cookie = cookiejar.MozillaCookieJar()
+    cookie.load('c.txt', ignore_discard=True, ignore_expires=True)
+    req = request.Request('http://www.12306.cn')
+    opener = request.build_opener(request.HTTPCookieProcessor(cookie))
+    response = opener.open(req)
+    print(response.read())
+
+
 if __name__ == "__main__":
-    headers = {'User-Agent': UserAgent().random, 'Accept-Encoding': 'gzip, deflate', 'Accept': '*/*',
-               'Connection': 'keep-alive'}
-
-    session = requests.Session()
-    session.headers = headers
-
-    print(session.cookies.get_dict())
-    res = session.get('https://www.12306.cn/index/', headers=headers)
-    print(session.cookies.get_dict())
-    print(session.headers)
+    cookie_test1()

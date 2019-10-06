@@ -1,16 +1,20 @@
 # coding:utf-8
 
+from http import cookiejar
 from urllib import parse
-import requests
-from fake_useragent import UserAgent
-import util.logger as logger
-import urllib3
 
+import requests
+import urllib3
+from fake_useragent import UserAgent
+
+import util.logger as logger
+
+cookie_path = 'cookie.txt'
 urllib3.disable_warnings()
 
 log = logger.Logger(__name__)
 
-cookie = "_jc_save_wfdc_flag=dc; RAIL_DEVICEID=cqB4pPFnBKE85FlMa0qFSZj5DLtacLUcXIq5-8b8nfCRoBzn4Lo9WcOkLHxM9xLp0LL2kYq59jad3r0PbJWeP75uNjgHVqhOtz1a6-2Xb1x1sQq17wQbMirB22UogoIPCRK41j-80NxOI7B8SFeNNWmx-IMRXNIM; RAIL_EXPIRATION=1568956001186; _jc_save_fromStation=%u957F%u6C99%2CCSQ; BIGipServerpool_passport=300745226.50215.0000; BIGipServerotn=435159562.64545.0000; route=c5c62a339e7744272a54643b3be5bf64;"
+cookie = "Cookie: _passport_session=967a7f2ff5874c39ba2767ab1eb7d9565362; _passport_ct=f5b0b27a2de8482884f917ba57fa2445t7920; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u6B66%u660C%2CWCN; _jc_save_toStation=%u957F%u6C99%2CCSQ; BIGipServerotn=653263370.24610.0000; RAIL_EXPIRATION=1570596001182; RAIL_DEVICEID=QpBR0-Dv71ZjiueC0I29kqdexiMb1hpE6Wbq-e29e4f7z05D9MvtlaP8tyfVRzQcGEumaHWSRkACeCQm2FfxMPZWpwTWHAm1Yli-8I_uAMnrAh4d-Pxx6O0iqh2o6H4G1fD-dn5F8Xgccjh0fs1M-EqVSFsA82qq; route=6f50b51faa11b987e576cdb301e545c4; _jc_save_toDate=2019-10-06; _jc_save_fromDate=2019-10-15; BIGipServerpool_passport=351076874.50215.0000"
 
 
 class Http(object):
@@ -67,8 +71,18 @@ class Http(object):
 
 api = Http()
 
+
+def save_cookie():
+    new_cookie = cookiejar.LWPCookieJar(cookie_path)
+    requests.utils.cookiejar_from_dict({c.name: c.value for c in api.session.cookies}, new_cookie)
+    new_cookie.save(cookie_path, ignore_discard=True, ignore_expires=True)
+
+
+def load_cookie():
+    old_cookie = cookiejar.LWPCookieJar()
+    old_cookie.load(cookie_path, ignore_discard=True, ignore_expires=True)
+    api.session.cookies = requests.utils.cookiejar_from_dict(requests.utils.dict_from_cookiejar(old_cookie))
+
+
 if __name__ == '__main__':
     http = Http()
-    # res = http.post("http://localhost:8080/test2")
-    # res = requests.post(url="https://kyfw.12306.cn/passport/web/login")
-    # print(str(res.content, encoding="utf-8"))

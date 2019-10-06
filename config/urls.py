@@ -4,27 +4,19 @@ URLS = {
     'login': {
         'request_url': 'http://kyfw.12306.cn/passport/web/login',
         'method': 'post',
-        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        'page': 'https://kyfw.12306.cn/otn/resources/login.html',
         'params': {'username': '', 'password': '', 'appid': 'otn', 'answer': ''}
     },
     'validate_captcha': {
         'request_url': 'https://kyfw.12306.cn/passport/captcha/captcha-check?answer={}&rand=sjrand&login_site=E&_={}',
-        'method': 'get',
-        'page': 'https://kyfw.12306.cn/otn/resources/login.html',
-        'params': {'answer': '', 'rand': '', 'login_site': 'otn'}
+        'method': 'get'
     },
-    'captcha': {
+    'captcha_url': {
         'request_url': 'https://kyfw.12306.cn/passport/captcha/captcha-image64',
-        'method': 'get',
-        'page': 'https://kyfw.12306.cn/otn/resources/login.html',
-        'params': {}
+        'method': 'get'
     },
     'ticket_query': {
         'request_url': 'https://kyfw.12306.cn/otn/leftTicket/queryA',
         'method': 'get',
-        'Content-Type': '',
-        'page': 'https://kyfw.12306.cn/otn/resources/login.html',
         'params': {
             'leftTicketDTO.train_date': '',
             'leftTicketDTO.from_station': '',
@@ -35,7 +27,6 @@ URLS = {
     'submit_order': {
         'request_url': 'https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest',
         'method': 'post',
-        'page': 'https://kyfw.12306.cn/otn/leftTicket/init',
         'params': {
             'secretStr': '',
             'train_date': '',
@@ -50,7 +41,6 @@ URLS = {
     'check_order_info': {
         'request_url': 'https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo',
         'method': 'post',
-        'page': 'https://kyfw.12306.cn/otn/confirmPassenger/initDc',
         'params': {
             'bed_level_order_num': '000000000000000000000000000000',
             'passengerTicketStr': '',
@@ -71,8 +61,7 @@ URLS = {
     },
     'confirm_passenger': {
         'request_url': 'https://kyfw.12306.cn/otn/confirmPassenger/initDc',
-        'method': 'get',
-        'params': {}
+        'method': 'get'
     },
     'queue_count': {
         'request_url': 'https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount',
