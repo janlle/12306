@@ -21,7 +21,7 @@ class Passenger(object):
         self._first_letter = '',
         self._total_times = '',
         self._index_id = '',
-        self._allEncStr = '',
+        self._all_enc_str = '',
 
     @property
     def passenger_name(self):
@@ -160,20 +160,20 @@ class Passenger(object):
         self._index_id = value
 
     @property
-    def allEncStr(self):
-        return self._allEncStr
+    def all_enc_str(self):
+        return self._all_enc_str
 
-    @allEncStr.setter
-    def allEncStr(self, value):
-        self._allEncStr = value
+    @all_enc_str.setter
+    def all_enc_str(self, value):
+        self._all_enc_str = value
 
     def __str__(self):
-        return '[name: %s,' \
-               'sex: %s' \
-               'birth: %s' \
-               'id_card: %s' \
-               'phone: %s' \
-               'email: %s' \
+        return '[name: %s, ' \
+               'sex: %s, ' \
+               'birth: %s, ' \
+               'id_card: %s, ' \
+               'phone: %s, ' \
+               'email: %s, ' \
                'passenger_type: %s]' % (self.passenger_name or '',
                                         self.sex_name or '',
                                         self.born_date or '',
@@ -185,10 +185,23 @@ class Passenger(object):
     __repr__ = __str__
 
     def old_passenger_str(self):
-        return '%s,%s,%s,%s' % (self.passenger_name or '', self.passenger_type or '', self.passenger_id_type_code or '',
-                                self.passenger_type or '')
+        """
+        姓名,证件类别,证件号码,
+        张三,1,4201***********130,1_
+        :return:
+        """
+        return '%s,%s,%s,%s_' % (
+            self.passenger_name or '', self.passenger_id_type_code or '', self.passenger_id_no or '',
+            self.passenger_type or '')
 
-    def passenger_ticket_str(self, seat_type, ticket_type):
+    def passenger_ticket_str(self, seat_type):
+        """
+        座位类型,0,车票类型，姓名，身份正号，电话，N（多个的话，以逗号分隔）
+        1,0,1,张三,1,4201***********130,15915642596,N,1e41e00b84cd034d45539fde97af937536f5b28216780a8dd64475afff4e6f2d6e904c90c9c2035d221f9d356b81f8fb
+        :param seat_type: seat type
+        :return:
+        """
         return '%s,%s,%s,%s,%s,%s,%s,%s,%s' % (
-            seat_type, 0, ticket_type, self.passenger_name or '', 1, self.passenger_id_no, self._mobile_no or '', 'N',
-            self.allEncStr or '')
+            seat_type, 0, self.passenger_type or '', self.passenger_name or '', self.passenger_id_type_code or '',
+            self.passenger_id_no, self.mobile_no or '', 'N',
+            self.all_enc_str or '')
