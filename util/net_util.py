@@ -38,7 +38,7 @@ class Http(object):
         try:
             if isinstance(params, dict):
                 url += ("?" + parse.urlencode(params))
-            log.info(url)
+            log.info('GET: ' + url)
             response = self.session.get(url=url, data=data, headers=self.headers, timeout=self.timeout, verify=False)
             if response.status_code == 200:
                 result = response
@@ -51,7 +51,7 @@ class Http(object):
 
     def post(self, url, body=None, headers=None):
         result = None
-        log.info(url)
+        log.info('POST: ' + url)
         self.set_header(headers=headers)
         try:
             response = self.session.post(url=url, data=body, headers=self.headers, timeout=self.timeout, verify=False)

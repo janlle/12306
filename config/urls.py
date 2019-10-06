@@ -90,13 +90,13 @@ URLS = {
             'REPEAT_SUBMIT_TOKEN': '',
         }
     },
-    'confirm_submit': {
+    'confirm_submit_url': {
         'request_url': 'https://kyfw.12306.cn/otn/confirmPassenger/confirmSingleForQueue',
         'method': 'post',
         'params': {
             '_json_at': '',
             'choose_seats': '',
-            'dwAll': '',
+            'dwAll': 'N',
             'key_check_isChange': '',
             'leftTicketStr': '',
             'oldPassengerStr': '',
@@ -104,12 +104,16 @@ URLS = {
             'purpose_codes': '',
             'randCode': '',
             'REPEAT_SUBMIT_TOKEN': '',
-            'roomType': '',
+            'roomType': '00',
             'seatDetailType': '',
             'train_location': '',
-            'whatsSelect': '',
+            'whatsSelect': '1',
         }
-    }
+    },
+    'order_callback_url': {
+        'request_url': 'https://kyfw.12306.cn/otn/confirmPassenger/queryOrderWaitTime?random={}&tourFlag={}&_json_att=',
+        'method': 'get'
+    },
 
 }
 
