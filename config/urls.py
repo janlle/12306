@@ -1,12 +1,17 @@
 # coding:utf-8
 
 URLS = {
-    'login': {
+    'login_url': {
         'request_url': 'http://kyfw.12306.cn/passport/web/login',
         'method': 'post',
+        'headers': {
+            'Referer': 'https://kyfw.12306.cn/otn/resources/login.html',
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Origin': 'https://kyfw.12306.cn'
+        },
         'params': {'username': '', 'password': '', 'appid': 'otn', 'answer': ''}
     },
-    'validate_captcha': {
+    'check_captcha_url': {
         'request_url': 'https://kyfw.12306.cn/passport/captcha/captcha-check?answer={}&rand=sjrand&login_site=E&_={}',
         'method': 'get'
     },
@@ -111,90 +116,16 @@ URLS = {
         }
     },
     'devices_id_url': {
-        'request_url': 'https://kyfw.12306.cn/otn/HttpZF/logdevice?algID=fn5Y5BgTab&hashCode=xhF0ZDOw2W6GrtIBda-3GOblbRIfvp-Lw4dBoOfOy6U&FMQw=1&q4f3=zh-CN&VySQ=FGEvoin1a9U8qqP49kc9pmG2mUA2BUP3&VPIf=1&custID=133&VEek=unknown&dzuS=0&yD16=0&EOQP=382b3eb7cfc5d30f1b59cb283d1acaf3&lEnu=3232261143&jp76=52d67b2a5aa5e031084733d5006cc664&hAqN=Linux%20x86_64&platform=WEB&ks0Q=d22ca0b81584fbea62237b14bd04c866&TeRS=1003x1920&tOHY=24xx1080x1920&Fvje=i1l1o1s1&q5aJ=-8&wNLf=99115dfb07133750ba677d055874de87&0aew={}&timestamp={}',
+        'request_url': 'https://kyfw.12306.cn/otn/HttpZF/logdevice?algID=foiUJKaTni&hashCode=DUIbto1pWFTPaXxj3D8i2mfRhjp4_eQhS4yK2ptW80U&FMQw=0&q4f3=en-US&VPIf=1&custID=133&VEek=unknown&dzuS=0&yD16=0&EOQP=8f58b1186770646318a429cb33977d8c&jp76=52d67b2a5aa5e031084733d5006cc664&hAqN=Win32&platform=WEB&ks0Q=d22ca0b81584fbea62237b14bd04c866&TeRS=1040x1920&tOHY=24xx1080x1920&Fvje=i1l1o1s1&q5aJ=-8&wNLf=99115dfb07133750ba677d055874de87&0aew=Mozilla/5.0%20(Windows%20NT%2010.0;%20Win64;%20x64)%20AppleWebKit/537.36%20(KHTML,%20like%20Gecko)%20Chrome/77.0.3865.90%20Safari/537.36&E3gR=c9702ebf7b800d228a580c2897681aca&timestamp=1570434128329',
+        'method': 'get'
+    },
+    'conf_url': {
+        'request_url': 'https://kyfw.12306.cn/otn/login/conf',
+        'method': 'post'
+    },
+    'iconfont_url': {
+        'request_url': 'https://www.12306.cn/index/fonts/iconfont.ttf?t={}',
         'method': 'get'
     }
 
-}
-
-submitUrls = {
-    'dc': {
-        'submitOrderRequest': {
-            'url': r'https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest',
-            'method': 'POST',
-            'headers': {
-                'Referer': 'https://kyfw.12306.cn/otn/leftTicket/init',
-                'Content-Type': r'application/x-www-form-urlencoded; charset=UTF-8',
-                'Host': r'kyfw.12306.cn',
-                'X-Requested-With': 'XMLHttpRequest',
-                'Origin': 'https://kyfw.12306.cn',
-            },
-        },
-        'getPassengerDTOs': {
-            'url': r'https://kyfw.12306.cn/otn/confirmPassenger/getPassengerDTOs',
-            'method': 'POST',
-        },
-        'getExtraInfo': {
-            'url': r'https://kyfw.12306.cn/otn/confirmPassenger/initDc',
-            'method': 'POST',
-            'headers': {
-                'Referer': 'https://kyfw.12306.cn/otn/leftTicket/init',
-                'Host': r'kyfw.12306.cn',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
-            },
-            'response': 'html',
-        },
-        'checkUser': {
-            'url': r'https://kyfw.12306.cn/otn/login/checkUser',
-            'method': 'POST',
-            'headers': {
-                'Referer': r'https://kyfw.12306.cn/otn/leftTicket/init',
-                'Content-Type': r'application/x-www-form-urlencoded; charset=UTF-8',
-            }
-        },
-        'checkOrderInfo': {
-            'url': r'https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo',
-            'method': 'POST',
-            'headers': {
-                'Referer': r'https://kyfw.12306.cn/otn/confirmPassenger/initDc',
-            },
-        },
-        'getQueueCount': {
-            'url': r'https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount',
-            'method': 'POST',
-            'headers': {
-                'Referer': r'https://kyfw.12306.cn/otn/confirmPassenger/initDc',
-            },
-        },
-        'confirmForQueue': {
-            'url': r'https://kyfw.12306.cn/otn/confirmPassenger/confirmSingleForQueue',
-            'method': 'POST',
-            'headers': {
-                'Referer': r'https://kyfw.12306.cn/otn/confirmPassenger/initDc',
-                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-            },
-        },
-        'queryOrderWaitTime': {
-            'url': r'https://kyfw.12306.cn/otn/confirmPassenger/queryOrderWaitTime',
-            'method': 'GET',
-            'headers': {
-                'Referer': r'https://kyfw.12306.cn/otn/confirmPassenger/initDc',
-            },
-        },
-        'resultOrderForQueue': {
-            'url': r'https://kyfw.12306.cn/otn/confirmPassenger/resultOrderForDcQueue',
-            'method': 'POST',
-            'headers': {
-                'Referer': r'https://kyfw.12306.cn/otn/confirmPassenger/initDc',
-            },
-        },
-        'queryMyOrderNoComplete': {
-            'url': r'https://kyfw.12306.cn/otn/queryOrder/queryMyOrderNoComplete',
-            'method': 'POST',
-            'headers': {
-                'Referer': r'https://kyfw.12306.cn/otn/queryOrder/initNoComplete',
-            },
-        }
-
-    }
 }
