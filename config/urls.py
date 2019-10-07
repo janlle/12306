@@ -103,6 +103,17 @@ URLS = {
         'request_url': 'https://kyfw.12306.cn/otn/confirmPassenger/queryOrderWaitTime?random={}&tourFlag={}&_json_att=',
         'method': 'get'
     },
+    'check_login_url': {
+        'request_url': 'https://kyfw.12306.cn/passport/web/auth/uamtk-static',
+        'method': 'post',
+        'params': {
+            'appid': 'otn'
+        }
+    },
+    'devices_id_url': {
+        'request_url': 'https://kyfw.12306.cn/otn/HttpZF/logdevice?algID=fn5Y5BgTab&hashCode=xhF0ZDOw2W6GrtIBda-3GOblbRIfvp-Lw4dBoOfOy6U&FMQw=1&q4f3=zh-CN&VySQ=FGEvoin1a9U8qqP49kc9pmG2mUA2BUP3&VPIf=1&custID=133&VEek=unknown&dzuS=0&yD16=0&EOQP=382b3eb7cfc5d30f1b59cb283d1acaf3&lEnu=3232261143&jp76=52d67b2a5aa5e031084733d5006cc664&hAqN=Linux%20x86_64&platform=WEB&ks0Q=d22ca0b81584fbea62237b14bd04c866&TeRS=1003x1920&tOHY=24xx1080x1920&Fvje=i1l1o1s1&q5aJ=-8&wNLf=99115dfb07133750ba677d055874de87&0aew={}&timestamp={}',
+        'method': 'get'
+    }
 
 }
 

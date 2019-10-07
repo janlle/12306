@@ -99,7 +99,7 @@ def verify(base64_code):
     results = []
     for pos, label in enumerate(labels):
         text = verify_titles[label]
-        log.info(str(pos + 1) + text)
+        log.info(str(pos + 1) + '.' + text)
         if text in text_list:
             results.append(str(pos + 1))
     return results

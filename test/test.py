@@ -10,6 +10,7 @@ from fake_useragent import UserAgent
 from urllib import request
 from urllib import parse
 from http import cookiejar
+from util.net_util import *
 
 cur_path = os.path.dirname(os.path.realpath(__file__))  # log_path是存放日志的路径
 log_path = os.path.join(os.path.dirname(cur_path), 'logs')
@@ -62,5 +63,14 @@ def cookie_test3():
     print(response.read())
 
 
+def save_cookie_test():
+    res = api.get('https://www.12306.cn/index/')
+    save_cookie()
+
+
+def remove_cookie_test():
+    clear_cookie()
+
+
 if __name__ == "__main__":
-    cookie_test1()
+    save_cookie_test()
