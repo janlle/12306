@@ -68,21 +68,45 @@ class Http(object):
         self.remove_header(headers=headers)
         return result
 
+    def request(self, url, method='GET', data=None, proxy=None):
+        if proxy is None:
+            proxy = {}
+        else:
+            proxy = {"http": "http://{}".format(proxy)}
+        return self.session.request(method=method,
+                                    url=url,
+                                    proxies=proxy,
+                                    data=data,
+                                    timeout=self.timeout,
+                                    allow_redirects=False
+                                    )
+
+    @staticmethod
+    def save_cookie():
+        new_cookie = cookiejar.LWPCookieJar(cookie_path)
+        requests.utils.cookiejar_from_dict({c.name: c.value for c in api.session.cookies}, new_cookie)
+        new_cookie.save(cookie_path, ignore_discard=True, ignore_expires=True)
+        log.info('save_cookie' + str(api.session.cookies.get_dict()))
+
+    @staticmethod
+    def load_cookie():
+        old_cookie = cookiejar.LWPCookieJar()
+        old_cookie.load(cookie_path, ignore_discard=True, ignore_expires=True)
+        api.session.cookies = requests.utils.cookiejar_from_dict(requests.utils.dict_from_cookiejar(old_cookie))
+        log.info('load_cookie' + str(api.session.cookies.get_dict()))
+
+    @staticmethod
+    def set_cookie(**kwargs):
+        for k, v in kwargs.items():
+            api.session.cookies.set(k, v)
+        log.info('set_cookie' + str(api.session.cookies.get_dict()))
+
+    @staticmethod
+    def clear_cookie(key=None):
+        api.session.cookies.set(key, None) if key else api.session.cookies.clear()
+
 
 api = Http()
-
-
-def save_cookie():
-    new_cookie = cookiejar.LWPCookieJar(cookie_path)
-    requests.utils.cookiejar_from_dict({c.name: c.value for c in api.session.cookies}, new_cookie)
-    new_cookie.save(cookie_path, ignore_discard=True, ignore_expires=True)
-
-
-def load_cookie():
-    old_cookie = cookiejar.LWPCookieJar()
-    old_cookie.load(cookie_path, ignore_discard=True, ignore_expires=True)
-    api.session.cookies = requests.utils.cookiejar_from_dict(requests.utils.dict_from_cookiejar(old_cookie))
-
 
 if __name__ == '__main__':
     http = Http()
