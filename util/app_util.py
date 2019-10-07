@@ -22,6 +22,10 @@ def timestamp():
     return int(round(time.time() * 1000))
 
 
+def current_timestamp():
+    return int(round(time.time() * 1000))
+
+
 def current_hour():
     return datetime.datetime.now().hour
 
