@@ -25,19 +25,18 @@ if __name__ == '__main__':
             continue
         else:
             # login.login()
-            ticket_list = search_stack(config.FROM_STATION, config.TO_STATION, config.DATE)
+            ticket_list = search_stack(from_station=config.FROM_STATION, to_station=config.TO_STATION,
+                                       train_date=config.DATE)
             show_tickets(ticket_list)
-            log.info('A total of %d trains were found' % len(ticket_list))
-            if config.TRAINS_NO and len(config.TRAINS_NO) > 0:
-                if config.SEAT_TYPE:
-                    ticket_list = [i for i in ticket_list if i.train_no in config.TRAINS_NO]
-                    show_tickets(ticket_list)
-                    log.info('There are qualified trains total %d' % len(ticket_list))
+            log.info('There are qualified trains total %d' % len(ticket_list))
+            if config.SEAT_TYPE:
+                ticket_list = [i for i in ticket_list if i.train_no in config.TRAINS_NO]
+                show_tickets(ticket_list)
+                log.info('There are qualified trains total %d' % len(ticket_list))
 
-                    for ticket in ticket_list:
-                        ticket_seat = ticket.get_seat_level(config.SEAT_TYPE)
-                        print(ticket_seat)
-
+                for ticket in ticket_list:
+                    ticket_seat = ticket.get_seat_level(config.SEAT_TYPE)
+                    print(ticket_seat)
             elif config.SEAT_TYPE:
                 pass
             break
