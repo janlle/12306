@@ -24,7 +24,7 @@ if __name__ == '__main__':
             time.sleep(1)
             continue
         else:
-            login.login()
+            # login.login()
             ticket_list = search_stack(config.FROM_STATION, config.TO_STATION, config.DATE)
             show_tickets(ticket_list)
             log.info('A total of %d trains were found' % len(ticket_list))

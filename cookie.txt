@@ -1,0 +1,10 @@
+#LWP-Cookies-2.0
+Set-Cookie3: BIGipServerotn="183501322.38945.0000"; path="/"; domain=""; path_spec; discard; HttpOnly=None; version=0
+Set-Cookie3: BIGipServerpool_index="837812746.43286.0000"; path="/"; domain=""; path_spec; discard; HttpOnly=None; version=0
+Set-Cookie3: BIGipServerpool_passport="216859146.50215.0000"; path="/"; domain=""; path_spec; discard; HttpOnly=None; version=0
+Set-Cookie3: JSESSIONID=9D6A98402E843A3901EB22C96AC82478; path="/"; domain=""; path_spec; discard; HttpOnly=None; version=0
+Set-Cookie3: RAIL_DEVICEID="RH0zEvbHbpoUYO8mUt41T7j-iZzT9YrKHtsV3KRYux1MEYdN6vuAm7y8WWY7RNSfN9uq5tqXTsGNEfyOd1HY3hXTGPiW4-omVjI5X1JJzPBbfgV2hxA1RKwTKWM8vrj3rC2eFCyRxxxbKxuaKASLkqOHjPMYNed2"; path="/"; domain=""; path_spec; discard; HttpOnly=None; version=0
+Set-Cookie3: RAIL_EXPIRATION=1570841376128; path="/"; domain=""; path_spec; discard; HttpOnly=None; version=0
+Set-Cookie3: _passport_session=49bf753074e04a78ad1f809e851034320378; path="/"; domain=""; path_spec; discard; HttpOnly=None; version=0
+Set-Cookie3: route=c5c62a339e7744272a54643b3be5bf64; path="/"; domain=""; path_spec; discard; HttpOnly=None; version=0
+Set-Cookie3: uamtk="-c3XINRCE6Y8KkoO-mSJtdix6bTI6W2v36w1w0"; path="/"; domain=""; path_spec; discard; HttpOnly=None; version=0

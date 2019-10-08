@@ -11,6 +11,8 @@ urllib3.disable_warnings()
 
 log = logger.Logger(__name__)
 
+proxy_list = {'https': 'https://157.245.0.181:3128', 'http': 'http://134.209.162.5:80'}
+
 
 class Http(object):
 
@@ -91,4 +93,6 @@ class Http(object):
 api = Http()
 
 if __name__ == '__main__':
-    http = Http()
+    # http = Http()
+    response = requests.get('https://www.baidu.com', proxies=proxy_list)
+    print(response.status_code)
