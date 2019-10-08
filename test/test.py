@@ -12,10 +12,6 @@ from urllib import parse
 from http import cookiejar
 from util.net_util import *
 
-cur_path = os.path.dirname(os.path.realpath(__file__))  # log_path是存放日志的路径
-log_path = os.path.join(os.path.dirname(cur_path), 'logs')
-if not os.path.exists(log_path): os.mkdir(log_path)  # 如果不存在这个logs文件夹，就自动创建一个
-logName = os.path.join(log_path, '%s.log' % time.strftime('%Y-%m-%d'))  # 文件的命名
 
 log_colors_config = {
     'DEBUG': 'cyan',
@@ -72,5 +68,26 @@ def remove_cookie_test():
 
 
 if __name__ == "__main__":
+    from prettytable import PrettyTable
 
+    x = PrettyTable(["name", "Area", "Population", "Annual Rainfall"])
+
+    x.align["name"] = "l"  # Left align city names
+
+    x.padding_width = 1  # One space between column edges and contents (default)
+
+    x.add_row(["Adelaide", 1295, 1158259, 600.5])
+
+    x.add_row(["Brisbane", 5905, 1857594, 1146.4])
+
+    x.add_row(["Darwin", 112, 120900, 1714.7])
+
+    x.add_row(["Hobart", 1357, 205556, 619.5])
+
+    x.add_row(["Sydney", 2058, 4336374, 1214.8])
+
+    x.add_row(["Melbourne", 1566, 3806092, 646.9])
+
+    x.add_row(["Perth", 5386, 1554769, 869.4])
+    print(x)
     pass

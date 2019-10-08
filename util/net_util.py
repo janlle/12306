@@ -5,13 +5,13 @@ from urllib import parse
 import requests
 import urllib3
 import util.logger as logger
+from sprider.get_proxy import ProxySpider
+from util.app_util import get_root_path
 
-cookie_path = '../cookie.txt'
+cookie_path = get_root_path() + '/cookie.txt'
 urllib3.disable_warnings()
 
 log = logger.Logger(__name__)
-
-proxy_list = {'https': 'https://157.245.0.181:3128', 'http': 'http://134.209.162.5:80'}
 
 
 class Http(object):
@@ -20,6 +20,9 @@ class Http(object):
         self.session = requests.Session()
         self.timeout = timeout
         self.retry_num = retry
+        self.proxy_spider = ProxySpider()
+        # self.proxy = self.proxy_spider.get_able_proxy()
+        self.proxy = None
 
     def get(self, url, data=None, headers=None, params=None):
         result = None
@@ -28,7 +31,7 @@ class Http(object):
                 url += ("?" + parse.urlencode(params))
             log.info('GET: ' + url)
             response = self.session.get(url=url, data=data, headers=headers, timeout=self.timeout, verify=False,
-                                        allow_redirects=False)
+                                        allow_redirects=False, proxies=self.proxy)
             if response.status_code == 200:
                 result = response
             else:
@@ -42,7 +45,7 @@ class Http(object):
         log.info('POST: ' + url)
         try:
             response = self.session.post(url=url, data=body, headers=headers, timeout=self.timeout, verify=False,
-                                         allow_redirects=False)
+                                         allow_redirects=False, proxies=self.proxy)
             if response.status_code == 200:
                 result = response
             else:
@@ -51,14 +54,10 @@ class Http(object):
             log.error(e)
         return result
 
-    def request(self, url, method='GET', headers=None, data=None, proxy=None):
-        if proxy is None:
-            proxy = {}
-        else:
-            proxy = {"http": "http://{}".format(proxy)}
+    def request(self, url, method='GET', headers=None, data=None):
         return self.session.request(method=method,
                                     url=url,
-                                    proxies=proxy,
+                                    proxies=self.proxy,
                                     data=data,
                                     headers=headers,
                                     timeout=self.timeout,
@@ -93,6 +92,5 @@ class Http(object):
 api = Http()
 
 if __name__ == '__main__':
-    # http = Http()
-    response = requests.get('https://www.baidu.com', proxies=proxy_list)
-    print(response.status_code)
+    r = api.get('https://www.baidu.com')
+    print(r.status_code)

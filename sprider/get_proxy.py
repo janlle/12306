@@ -18,8 +18,7 @@ class ProxySpider(object):
         self.proxy_list = []
         self.sqlite = SqliteHelper()
 
-    def get_proxy(self):
-        print(len(self.proxy_list))
+    def get_proxy_test(self):
         return list(filter(lambda l: l['enable'] == 'yes' and proxy_test(l), self.proxy_list))
 
     def save_proxy(self, proxy):
@@ -37,7 +36,7 @@ class ProxySpider(object):
             for b in example_soup.table.tbody:
                 td_list = b.find_all('td')
                 proxy = {'ip': td_list[0].text, 'port': td_list[1].text, 'enable': td_list[6].text}
-                if proxy_test(proxy):
+                if proxy['enable'] == 'yes' and proxy_test(proxy):
                     log.info('save proxy: ' + str(proxy))
                     self.save_proxy(proxy=proxy)
                     self.proxy_list.append(proxy)
@@ -49,11 +48,11 @@ class ProxySpider(object):
         result = {}
         for p in self.get_all_proxy():
             if proxy_test({'ip': p['ip'], 'port': p['port']}):
-                result = {'ip': p['ip'], 'port': p['port']}
+                result = {'https': 'https://{}:{}'.format(p['ip'], p['port'])}
                 break
         if not result:
             self.spider()
-            return self.proxy_list[0]
+            return {'https': 'https://{}:{}'.format(self.proxy_list[0]['ip'], self.proxy_list[0]['port'])}
         return result
 
     def clear_ip_db(self):
@@ -63,4 +62,3 @@ class ProxySpider(object):
 if __name__ == '__main__':
     spider = ProxySpider()
     print(spider.get_able_proxy())
-
