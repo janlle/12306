@@ -62,6 +62,8 @@ def search_stack(from_station, to_station,
                  train_date=(datetime.datetime.now() + datetime.timedelta(days=1)).strftime('%Y-%m-%d'),
                  purpose="ADULT", train_no=None):
     """查询车票"""
+    api.load_cookie()
+
     result = []
     params = urls.URLS.get("ticket_query").get("params")
     params['leftTicketDTO.train_date'] = train_date
@@ -72,7 +74,7 @@ def search_stack(from_station, to_station,
     url = urls.URLS.get("ticket_query").get("request_url")
 
     response = api.get(url, params=params)
-    if response.headers.get('Content-Type') == 'application/json;charset=UTF-8':
+    if response and 'application/json' in response.headers.get('Content-Type'):
         body = response.json()
         if body['httpstatus'] == 200:
             result = body['data']['result']

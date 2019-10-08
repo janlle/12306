@@ -1,19 +1,26 @@
 # coding:utf-8
 
-import os
-import time
 import datetime
-import re
-import urllib
 import locale
+import os
+import re
+import telnetlib
+import time
+import urllib
 
-project_name = "12306"
+# from util.logger import Logger
+
+
 GMT_FORMAT = '%a %b %d %Y %H:%M:%S GMT+0800 (中国标准时间)'
 locale.setlocale(locale.LC_CTYPE, 'chinese')
 
 
+# log = Logger(__name__)
+
+
 def get_root_path():
     """获取项目根路径"""
+    project_name = "12306"
     current_path = os.path.abspath(os.path.dirname(__file__))
     return current_path[:current_path.find(project_name) + len(project_name)]
 
@@ -34,6 +41,10 @@ def current_date():
     return datetime.datetime.now().strftime('%y-%m-%d')
 
 
+def current_date_time():
+    return datetime.datetime.now().strftime('%y-%m-%d %H:%M:%S')
+
+
 def check_date(text):
     match = re.compile(r'^\d{4}-\d{1,2}-\d{1,2}$').match(text)
     if match:
@@ -44,6 +55,14 @@ def check_date(text):
 
 def decode_secret_str(code):
     return urllib.parse.unquote(code).replace('\n', '')
+
+
+def proxy_test(proxy):
+    try:
+        telnetlib.Telnet(proxy.get('ip'), proxy.get('port'), timeout=1)
+        return True
+    except BaseException as e:
+        return False
 
 
 def get_gmt_time(text):
@@ -57,4 +76,4 @@ def get_gmt_time(text):
 
 
 if __name__ == '__main__':
-    print(timestamp())
+    print(proxy_test({'ip': '129.205.160.138', 'port': 54789}))

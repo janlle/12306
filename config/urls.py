@@ -126,6 +126,9 @@ URLS = {
     'iconfont_url': {
         'request_url': 'https://www.12306.cn/index/fonts/iconfont.ttf?t={}',
         'method': 'get'
-    }
+    },
+    'free_proxy_url': {
+        'request_url': 'https://free-proxy-list.net/'
+    },
 
 }
