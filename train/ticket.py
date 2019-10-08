@@ -20,6 +20,7 @@ class Ticket(object):
         self._total_consume = ""
         self._leave_time = ""
         self._arrive_time = ""
+
         self._business_seat = ""
         self._first_class_seat = ""
         self._second_class_seat = ""
@@ -30,11 +31,34 @@ class Ticket(object):
         self._soft_seat = ""
         self._hard_seat = ""
         self._no_seat = ""
+
         self._other = ""
         self._mark = ""
         self._passenger_type = ""
         self._secret_str = ""
         self._start_date = ""
+
+    def get_seat_level(self, level):
+        """
+        商务座(9),一等座(9),二等座(7),高级软卧(6),软卧(5),动卧(4),硬卧(3),软座(2),硬座(1),无座(0)
+        :return:
+        """
+        result = []
+        seat_map = {
+            0: self.no_seat,
+            1: self.hard_seat,
+            2: self.soft_seat,
+            3: self.hard_sleep,
+            4: self.move_sleep,
+            5: self.soft_sleep,
+            6: self.advanced_soft_sleep,
+            7: self.second_class_seat,
+            8: self.first_class_seat,
+            9: self.business_seat
+        }
+        for l in level:
+            result.append({l: seat_map.get(l, '0')})
+        return result
 
     @property
     def train_no(self):

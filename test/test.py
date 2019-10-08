@@ -65,12 +65,12 @@ def cookie_test3():
 
 def save_cookie_test():
     res = api.get('https://www.12306.cn/index/')
-    save_cookie()
 
 
 def remove_cookie_test():
-    clear_cookie()
+    pass
 
 
 if __name__ == "__main__":
-    save_cookie_test()
+
+    pass

@@ -2,14 +2,11 @@
 
 from http import cookiejar
 from urllib import parse
-
 import requests
 import urllib3
-from fake_useragent import UserAgent
-
 import util.logger as logger
 
-cookie_path = 'cookie.txt'
+cookie_path = '../cookie.txt'
 urllib3.disable_warnings()
 
 log = logger.Logger(__name__)
@@ -22,19 +19,8 @@ class Http(object):
         self.timeout = timeout
         self.retry_num = retry
 
-    # def set_header(self, headers):
-    #     if isinstance(headers, dict):
-    #         for key, value in headers.items():
-    #             self.headers[key] = value
-    #
-    # def remove_header(self, headers):
-    #     if isinstance(headers, dict):
-    #         for key, value in headers.items():
-    #             del self.headers[key]
-
     def get(self, url, data=None, headers=None, params=None):
         result = None
-        # self.set_header(headers=headers)
         try:
             if isinstance(params, dict):
                 url += ("?" + parse.urlencode(params))
@@ -47,13 +33,11 @@ class Http(object):
                 log.error("GET request error: %d" % response.status_code)
         except Exception as e:
             log.error(e)
-        # self.remove_header(headers=headers)
         return result
 
     def post(self, url, body=None, headers=None):
         result = None
         log.info('POST: ' + url)
-        # self.set_header(headers=headers)
         try:
             response = self.session.post(url=url, data=body, headers=headers, timeout=self.timeout, verify=False,
                                          allow_redirects=False)
@@ -63,7 +47,6 @@ class Http(object):
                 log.error("POST request error: %d" % response.status_code)
         except Exception as e:
             log.error(e)
-        # self.remove_header(headers=headers)
         return result
 
     def request(self, url, method='GET', headers=None, data=None, proxy=None):
@@ -85,20 +68,20 @@ class Http(object):
         new_cookie = cookiejar.LWPCookieJar(cookie_path)
         requests.utils.cookiejar_from_dict({c.name: c.value for c in api.session.cookies}, new_cookie)
         new_cookie.save(cookie_path, ignore_discard=True, ignore_expires=True)
-        log.info('save_cookie' + str(api.session.cookies.get_dict()))
+        # log.info('save_cookie' + str(api.session.cookies.get_dict()))
 
     @staticmethod
     def load_cookie():
         old_cookie = cookiejar.LWPCookieJar()
         old_cookie.load(cookie_path, ignore_discard=True, ignore_expires=True)
         api.session.cookies = requests.utils.cookiejar_from_dict(requests.utils.dict_from_cookiejar(old_cookie))
-        log.info('load_cookie' + str(api.session.cookies.get_dict()))
+        # log.info('load_cookie' + str(api.session.cookies.get_dict()))
 
     @staticmethod
     def set_cookie(**kwargs):
         for k, v in kwargs.items():
             api.session.cookies.set(k, v)
-        log.info('set_cookie' + str(api.session.cookies.get_dict()))
+        # log.info('set_cookie' + str(api.session.cookies.get_dict()))
 
     @staticmethod
     def clear_cookie(key=None):
