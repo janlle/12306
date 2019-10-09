@@ -4,7 +4,6 @@ import json
 import re
 import time
 
-import tickst_config as config
 import util.app_util as util
 from train.passenger import Passenger
 from train.search_stack import *
@@ -12,40 +11,44 @@ from util.logger import Logger
 from util.net_util import api
 
 log = Logger(__name__)
+api.load_cookie()
 
 
 class Order(object):
 
-    def __init__(self):
-        self.order_url = urls.URLS.get('submit_order')
+    def __init__(self, ticket):
+        self.submit_order_request_url = urls.URLS.get('submit_order_request_url')
         self.passenger_url = urls.URLS.get('passenger_url')
         self.check_order_info = urls.URLS.get('check_order_info')
-        self.confirm_passenger = urls.URLS.get('confirm_passenger')
+        self.init_dc_url = urls.URLS.get('init_dc_url')
         self.queue_count = urls.URLS.get('queue_count')
         self.confirm_submit_url = urls.URLS.get('confirm_submit_url')
         self.order_callback_url = urls.URLS.get('order_callback_url')
+        self.unfinished_order_url = urls.URLS.get('unfinished_order_url')
         self.passenger_name = config.USER[0]
         self.from_station = config.FROM_STATION
         self.to_station = config.TO_STATION
         self.train_no = config.TRAINS_NO[0]
         self.seat_type = config.SEAT_TYPE[0]
         self.date = config.DATE
-        self.ticket = search_stack(self.from_station, self.to_station, train_no=self.train_no, train_date=self.date)[0]
-        print(self.get_passenger(self.passenger_name))
-        self.passenger = self.get_passenger(self.passenger_name)[0]
-        self.submit_token = {}
+        self.submit_token = None
+        self.ticket = ticket
+        self.passenger = None
 
     def submit(self):
         """提交车票信息"""
-        submit_url = self.order_url.get('request_url')
-        ticket_params = self.order_url.get('params')
+        submit_url = self.submit_order_request_url.get('request_url')
+        ticket_params = self.submit_order_request_url.get('params')
         ticket_params['back_train_date'] = util.current_date()
         ticket_params['train_date'] = config.DATE
         ticket_params['secretStr'] = util.decode_secret_str(self.ticket.secret_str)
         ticket_params['query_from_station_name'] = self.ticket.from_station
         ticket_params['query_to_station_name'] = self.ticket.to_station
-        submit_order_response = api.post(submit_url, ticket_params)
-        if submit_order_response.status_code == 200 and submit_order_response.json()['httpstatus'] == 200:
+        submit_order_response = api.post(submit_url, data=ticket_params)
+        if submit_order_response and submit_order_response.json()['httpstatus'] == 200:
+            # get submit token
+            self.submit_token = self.get_submit_token()
+            self.passenger = self.get_passenger(self.passenger_name)[0]
             log.info(submit_order_response.json())
             self.check_order()
         else:
@@ -55,18 +58,15 @@ class Order(object):
         """
         :return:
         """
-        # get submit params
-        self.submit_token = self.get_submit_token()
-
         request_url = self.check_order_info.get('request_url')
         request_params = self.check_order_info.get('params')
         request_params['passengerTicketStr'] = self.passenger.passenger_ticket_str(self.seat_type)
         request_params['oldPassengerStr'] = self.passenger.old_passenger_str()
         request_params['REPEAT_SUBMIT_TOKEN'] = self.submit_token['repeat_submit_token']
 
-        check_order_response = api.post(request_url, body=request_params)
+        check_order_response = api.post(request_url, data=request_params)
         log.info(check_order_response.json())
-        if check_order_response.status_code == 200 and check_order_response.json()['httpstatus'] == 200:
+        if check_order_response and check_order_response.json()['httpstatus'] == 200:
             self.get_query_count()
             self.confirm_submit()
 
@@ -78,7 +78,11 @@ class Order(object):
         """
         request_url = self.passenger_url.get('request_url')
         request_params = self.passenger_url.get('params')
+        # api.session.cookies.clear()
+        request_params['REPEAT_SUBMIT_TOKEN'] = self.submit_token['repeat_submit_token']
+        print(api.session.cookies.get_dict())
         passengers_data = api.post(request_url, request_params)
+        print(passengers_data.json())
         if passengers_data.status_code == 200:
             passengers = passengers_data.json()['data']['normal_passengers']
             if passengers and len(passengers) > 0:
@@ -114,8 +118,10 @@ class Order(object):
         get submit ticket token from confirm passenger page
         :return:
         """
-        url = self.confirm_passenger.get('request_url')
-        html_page = api.get(url)
+
+        request_url = self.init_dc_url.get('request_url')
+        request_params = self.init_dc_url.get('params')
+        html_page = api.post(request_url, data=request_params)
         html = str(html_page.content, encoding='utf-8')
         re_repeat_submit_token = re.compile(r"var globalRepeatSubmitToken = '(\S+)'")
         re_ticket_info_for_passenger_form = re.compile(r'var ticketInfoForPassengerForm=({.+})?')
@@ -124,7 +130,6 @@ class Order(object):
         repeat_submit_token = re.search(re_repeat_submit_token, html).group(1)
         ticket_info_for_passenger_form = re.search(re_ticket_info_for_passenger_form, html).group(1)
         order_request_dto = re.search(re_order_request_dto, html).group(1)
-
         return {
             'repeat_submit_token': repeat_submit_token,
             'ticket_info_for_passenger_form': json.loads(ticket_info_for_passenger_form.replace('\'', '\"')),
@@ -149,8 +154,8 @@ class Order(object):
         request_params['train_location'] = ticket_info_for_passenger_form['train_location']
         request_params['train_no'] = ticket_info_for_passenger_form['queryLeftTicketRequestDTO']['train_no']
         request_params['REPEAT_SUBMIT_TOKEN'] = self.submit_token['repeat_submit_token']
-        query_count = api.post(request_url, body=request_params)
-        if query_count.status_code == 200 and query_count.json()['httpstatus'] == 200:
+        query_count = api.post(request_url, data=request_params)
+        if query_count and query_count.json()['httpstatus'] == 200:
             log.info(query_count.json())
         else:
             log.error('get_query_count error')
@@ -173,8 +178,8 @@ class Order(object):
         request_params['leftTicketStr'] = ticket_info_for_passenger_form['leftTicketStr']
         request_params['REPEAT_SUBMIT_TOKEN'] = self.submit_token['repeat_submit_token']
 
-        confirm_submit_response = api.post(request_url, body=request_params)
-        if confirm_submit_response.status_code == 200:
+        confirm_submit_response = api.post(request_url, data=request_params)
+        if confirm_submit_response:
             log.info(confirm_submit_response.json())
         else:
             log.error('confirm_submit error')
@@ -184,11 +189,11 @@ class Order(object):
         request_url = self.order_callback_url.get('request_url')
         request_url = request_url.format(util.timestamp(), 'dc')
         order_callback_response = api.get(request_url)
-        if order_callback_response.status_code == 200:
+        if order_callback_response:
             response_json = order_callback_response.json()
             if response_json['data']['orderId']:
                 log.info('抢票成功,请登录12306我的火车票订单支付车票!')
-                return
+                return 'success'
             else:
                 time.sleep(1)
                 count += 1
@@ -200,10 +205,31 @@ class Order(object):
             self.passenger_name, self.from_station, self.to_station, self.train_no, self.seat_type, self.date,
             self.ticket.leave_time)
 
+    def search_unfinished_order(self):
+        """
+        this is search unfinished order
+        :return:
+        """
+        request_url = self.unfinished_order_url.get('request_url')
+        request_params = self.unfinished_order_url.get('params')
+        print(request_url)
+        print(request_params)
+        response = api.post(request_url, data=request_params)
+        if response:
+            print(response.json())
+        pass
+
 
 if __name__ == '__main__':
-    order = Order()
-    log.info(order)
-    order.submit()
-    log.info('车票购买排队中,请稍后...')
-    order.order_callback()
+    t = Ticket()
+    t.leave_time = '2019-11-07'
+    t.secret_str = 'kFb1rqYphydFW/FWBN6NAXE2rZ5BvA7sWvrhfphQ32m65fnQ9zBfNKcG64A9i0RQvSj9zbLJtza13uQ82gRN03TYraKALaC1OOmSs5BcF/P3N5C27XpGcqwRV1mkq+F5a6G+nHE9CBz1+QQPukvnuHCTkNXYNO5Jf4M8UNjuGoi7W6C3G+7GcExnWFXMtRpSvUrtiz/6UsEVBBlBmw++xuMKT7tNdxhx7hacczWV1ViEJ02whoPONM7Y9SzodsDE+T7ZpLd59MbOl+ajlbhZ1UHIX9mGlXZ2tF6Ji1g2DdRGtAjnES/1Cg=='
+    t.from_station = '武昌'
+    t.to_station = '长沙'
+    t.train_no = 'K81'
+    order = Order(t)
+    api.load_cookie()
+    print(api.session.cookies.get_dict())
+    order.search_unfinished_order()
+    # log.info('车票购买排队中,请稍后...')
+    # order.order_callback()

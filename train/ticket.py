@@ -8,39 +8,41 @@
 class Ticket(object):
 
     def __init__(self):
-        self._train_no = ""
-        self._from_station = ""
-        self._start_station = ""
-        self._end_station = ""
-        self._to_station = ""
-        self._start_station_code = ""
-        self._end_station_code = ""
-        self._from_station_code = ""
-        self._to_station_code = ""
-        self._total_consume = ""
-        self._leave_time = ""
-        self._arrive_time = ""
+        self._train_no = ''
+        self._from_station = ''
+        self._start_station = ''
+        self._end_station = ''
+        self._to_station = ''
+        self._start_station_code = ''
+        self._end_station_code = ''
+        self._from_station_code = ''
+        self._to_station_code = ''
+        self._total_consume = ''
+        self._leave_time = ''
+        self._arrive_time = ''
 
-        self._business_seat = ""
-        self._first_class_seat = ""
-        self._second_class_seat = ""
-        self._advanced_soft_sleep = ""
-        self._soft_sleep = ""
-        self._move_sleep = ""
-        self._hard_sleep = ""
-        self._soft_seat = ""
-        self._hard_seat = ""
-        self._no_seat = ""
+        self._business_seat = ''
+        self._first_class_seat = ''
+        self._second_class_seat = ''
+        self._advanced_soft_sleep = ''
+        self._soft_sleep = ''
+        self._move_sleep = ''
+        self._hard_sleep = ''
+        self._soft_seat = ''
+        self._hard_seat = ''
+        self._no_seat = ''
 
-        self._other = ""
-        self._mark = ""
-        self._passenger_type = ""
-        self._secret_str = ""
-        self._start_date = ""
+        self._other = ''
+        self._mark = ''
+        self._passenger_type = ''
+        self._secret_str = ''
+        self._start_date = ''
+
+        self._seat_type = ''
 
     def get_seat_level(self, level):
         """
-        商务座(9),一等座(9),二等座(7),高级软卧(6),软卧(5),动卧(4),硬卧(3),软座(2),硬座(1),无座(0)
+        商务座(9), 一等座(9), 二等座(7), 高级软卧(6), 软卧(5), 动卧(4), 硬卧(3), 软座(2), 硬座(1), 无座(0)
         :return:
         """
         result = []
@@ -365,6 +367,14 @@ class Ticket(object):
     @start_date.setter
     def start_date(self, value):
         self._start_date = value
+
+    @property
+    def seat_type(self):
+        return self._seat_type
+
+    @seat_type.setter
+    def seat_type(self, value):
+        self._seat_type = value
 
     def __str__(self):
         return '[车次: %s, 出发站: %s, 到达站: %s, 出发时间: %s, 到达时间: %s]' % (

@@ -12,10 +12,22 @@ from train.search_stack import *
 import tickst_config as config
 import util.app_util as util
 import time
-import copy
-import train.order
+from train.order import Order
 
 log = Logger(__name__)
+
+seat_mapping = {
+    0: '无座',
+    1: '硬座',
+    2: '软座',
+    3: '硬卧',
+    4: '动卧',
+    5: '软卧',
+    6: '高级软卧',
+    7: '二等座',
+    8: '一等座',
+    9: '商务座',
+}
 
 if __name__ == '__main__':
     login = Login()
@@ -25,10 +37,10 @@ if __name__ == '__main__':
             time.sleep(1)
             continue
         else:
-            # login.login()
+            login.login()
             ticket_list = search_stack(from_station=config.FROM_STATION, to_station=config.TO_STATION,
                                        train_date=config.DATE)
-            show_tickets(ticket_list)
+            # show_tickets(ticket_list)
             log.info('There are qualified trains total %d' % len(ticket_list))
             if config.SEAT_TYPE:
                 ticket_list = [i for i in ticket_list if i.train_no in config.TRAINS_NO]
@@ -66,7 +78,20 @@ if __name__ == '__main__':
                         continue
                     break
                 if usable_ticket:
-                    log.info('Find a suitable ticket: ' + str(usable_ticket))
+                    log.info(
+                        'Find a suitable ticket: ' + usable_ticket['train_no'] + ', seat type: ' + seat_mapping.get(
+                            usable_ticket['type']))
+                    order_ticket = None
+                    for ticket in ticket_list:
+                        if ticket.train_no == usable_ticket['train_no']:
+                            order_ticket = ticket
+                            break
+                    order_ticket.seat_type = usable_ticket['type']
+                    order = Order(order_ticket)
+                    log.info(order)
+                    order.submit()
+                    log.info('Ticket order line is in progress,please wait...')
+                    order.order_callback()
                 else:
                     log.warning('There is no proper ticket')
                     break
