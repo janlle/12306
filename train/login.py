@@ -1,22 +1,30 @@
 # coding:utf-8
 
+import base64
 import json
-import time
 from io import BytesIO
+from urllib.parse import quote
+
 from PIL import Image
-from fake_useragent import UserAgent
+
 import config.urls as urls
 import tickst_config as config
+from config.stations import get_by_name
 from util.app_util import *
-import util.logger
 from util.net_util import *
 from verify import verify_code
-import base64
-import psutil
 
 log = logger.Logger(__name__)
 urllib3.disable_warnings()
 captcha_temp_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/image_captcha/'
+
+fake_cookie = {
+    '_jc_save_fromStation': quote(config.FROM_STATION + ',' + get_by_name(config.FROM_STATION), 'utf-8'),
+    '_jc_save_toStation': quote(config.TO_STATION + ',' + get_by_name(config.FROM_STATION), 'utf-8'),
+    '_jc_save_fromDate': config.DATE,
+    '_jc_save_toDate': current_date(),
+    '_jc_save_wfdc_flag': 'dc'
+}
 
 
 class Login(object):
@@ -32,6 +40,8 @@ class Login(object):
         self.iconfont_url = urls.URLS.get('iconfont_url')
         self.check_captcha_url = urls.URLS.get('check_captcha_url')
         self.captcha_url = urls.URLS.get('captcha_url')
+        self.uamtk_url = urls.URLS.get('uamtk_url')
+        self.uamauthclient_url = urls.URLS.get('uamauthclient_url')
         self.answer = ''
 
     def login(self):
@@ -41,6 +51,7 @@ class Login(object):
         login_count = 0
 
         api.clear_cookie()
+        api.set_cookie(m=fake_cookie)
         self.init_cookie()
 
         request_url = self.login_url.get('request_url')
@@ -58,11 +69,12 @@ class Login(object):
             self.check_captcha(self.auto_identify)
             # start login
             try:
-                login_response = api.post(request_url, body=request_params,
+                login_response = api.post(request_url, data=request_params,
                                           headers=login_headers)
                 content_type = login_response.headers.get('Content-Type')
                 if 'application/json' in content_type and login_response.json()['result_code'] == 0:
-                    log.info('login success login frequency is: {}'.format(login_count))
+                    log.info('login success login frequency is {}'.format(login_count))
+                    self.check_login_status()
                     api.save_cookie()
                     break
                 elif login_response.headers.get('Content-Type') == 'text/html':
@@ -87,11 +99,12 @@ class Login(object):
         # third
         request_url = self.check_login_url.get('request_url')
         request_params = self.check_login_url.get('params')
-        api.post(request_url, body=request_params)
+        api.post(request_url, data=request_params)
 
         # fourth
         request_url = self.device_id_url.get('request_url').format(timestamp())
         device_info_response = api.get(request_url)
+
         if device_info_response.status_code == 200:
             try:
                 device_info = json.loads(device_info_response.text[18:-2])
@@ -106,13 +119,21 @@ class Login(object):
         check login status
         :return:
         """
-        request_url = self.check_login_url.get('request_url').format(UserAgent().random, timestamp())
-        request_params = self.check_login_url.get('params')
-        check_login_response = api.post(request_url, body=request_params,
-                                        headers={'Content-Type': 'application/x-www-form-urlencoded'})
-        if check_login_response.status_code == 200 and 'application/json' in check_login_response.headers.get(
-                'Content-Type'):
-            log.info(check_login_response.json()['result_message'])
+        try:
+            request_url = self.uamtk_url.get('request_url')
+            request_params = self.uamtk_url.get('params')
+            response = api.post(request_url, data=request_params)
+            if response and response.json()['result_code'] == 0:
+                request_url = self.uamauthclient_url.get('request_url')
+                request_params = self.uamauthclient_url.get('params')
+                request_params['tk'] = response.json()['newapptk']
+                response = api.post(request_url, data=request_params)
+                if response:
+                    log.info(response.json()['验证通过'])
+                else:
+                    log.info('user check failed')
+        except BaseException as e:
+            log.error(e)
 
     def check_captcha(self, auto_identify=0):
         """

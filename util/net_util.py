@@ -2,8 +2,11 @@
 
 from http import cookiejar
 from urllib import parse
+
 import requests
 import urllib3
+from fake_useragent import UserAgent
+
 import util.logger as logger
 from sprider.get_proxy import ProxySpider
 from util.app_util import get_root_path
@@ -22,6 +25,7 @@ class Http(object):
         self.retry_num = retry
         self.proxy_spider = ProxySpider()
         # self.proxy = self.proxy_spider.get_able_proxy()
+        self.session.headers = {'User-Agent': UserAgent().random}
         self.proxy = None
 
     def get(self, url, data=None, headers=None, params=None):
@@ -29,29 +33,30 @@ class Http(object):
         try:
             if isinstance(params, dict):
                 url += ("?" + parse.urlencode(params))
-            log.info('GET: ' + url)
+            # log.info('GET: ' + url)
             response = self.session.get(url=url, data=data, headers=headers, timeout=self.timeout, verify=False,
                                         allow_redirects=False, proxies=self.proxy)
             if response.status_code == 200:
                 result = response
             else:
-                log.error("GET request error: %d" % response.status_code)
+                log.error("GET error status code: %d url: %s" % (response.status_code, url))
         except Exception as e:
-            log.error(e)
+            log.error('GET ' + str(e) + ' url: ' + url)
         return result
 
-    def post(self, url, body=None, headers=None):
+    def post(self, url, json=None, headers=None, data=None):
         result = None
-        log.info('POST: ' + url)
+        # log.info('POST: ' + url)
         try:
-            response = self.session.post(url=url, data=body, headers=headers, timeout=self.timeout, verify=False,
+            response = self.session.post(url=url, data=data, json=json, headers=headers, timeout=self.timeout,
+                                         verify=False,
                                          allow_redirects=False, proxies=self.proxy)
             if response.status_code == 200:
                 result = response
             else:
-                log.error("POST request error: %d" % response.status_code)
+                log.error("POST error status code: %d url: %s" % (response.status_code, url))
         except Exception as e:
-            log.error(e)
+            log.error('POST ' + str(e) + ' url: ' + url)
         return result
 
     def request(self, url, method='GET', headers=None, data=None):
@@ -79,9 +84,13 @@ class Http(object):
         # log.info('load_cookie' + str(api.session.cookies.get_dict()))
 
     @staticmethod
-    def set_cookie(**kwargs):
-        for k, v in kwargs.items():
-            api.session.cookies.set(k, v)
+    def set_cookie(m=None, **kwargs):
+        if m and isinstance(m, dict):
+            for k, v in m.items():
+                api.session.cookies.set(k, v)
+        else:
+            for k, v in kwargs.items():
+                api.session.cookies.set(k, v)
         # log.info('set_cookie' + str(api.session.cookies.get_dict()))
 
     @staticmethod

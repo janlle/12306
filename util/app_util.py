@@ -38,11 +38,11 @@ def current_hour():
 
 
 def current_date():
-    return datetime.datetime.now().strftime('%y-%m-%d')
+    return datetime.datetime.now().strftime('%Y-%m-%d')
 
 
 def current_date_time():
-    return datetime.datetime.now().strftime('%y-%m-%d %H:%M:%S')
+    return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 
 def check_date(text):
@@ -76,4 +76,4 @@ def get_gmt_time(text):
 
 
 if __name__ == '__main__':
-    print(proxy_test({'ip': '129.205.160.138', 'port': 54789}))
+    print(current_date())

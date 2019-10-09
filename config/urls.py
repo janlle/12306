@@ -29,7 +29,7 @@ URLS = {
             'purpose_codes': '',
         }
     },
-    'submit_order': {
+    'submit_order_request_url': {
         'request_url': 'https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest',
         'method': 'post',
         'params': {
@@ -61,12 +61,16 @@ URLS = {
         'request_url': 'https://kyfw.12306.cn/otn/confirmPassenger/getPassengerDTOs',
         'method': 'post',
         'params': {
-            '_json_att': ''
+            '_json_att': '',
+            'REPEAT_SUBMIT_TOKEN': ''
         }
     },
-    'confirm_passenger': {
+    'init_dc_url': {
         'request_url': 'https://kyfw.12306.cn/otn/confirmPassenger/initDc',
-        'method': 'get'
+        'method': 'post',
+        'params': {
+            '_json_att': ''
+        }
     },
     'queue_count': {
         'request_url': 'https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount',
@@ -130,5 +134,26 @@ URLS = {
     'free_proxy_url': {
         'request_url': 'https://free-proxy-list.net/'
     },
+    'uamtk_url': {
+        'request_url': 'https://kyfw.12306.cn/passport/web/auth/uamtk',
+        'method': 'post',
+        'params': {
+            'appid': 'otn'
+        }
+    },
+    'uamauthclient_url': {
+        'request_url': 'https://kyfw.12306.cn/otn/uamauthclient',
+        'method': 'post',
+        'params': {
+            'tk': ''
+        }
+    },
+    'unfinished_order_url': {
+        'request_url': 'https://kyfw.12306.cn/otn/queryOrder/queryMyOrderNoComplete',
+        'method': 'post',
+        'params': {
+            '_json_att': ''
+        }
+    }
 
 }

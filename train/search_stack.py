@@ -58,14 +58,6 @@ ticket_data_index = {
     'INDEX_SECRET_STR': 0,
 }
 
-fake_cookie = {
-    '_jc_save_fromStation': config.FROM_STATION,
-    '_jc_save_toStation': config.TO_STATION,
-    '_jc_save_fromDate': config.DATE,
-    '_jc_save_toDate': current_date(),
-    '_jc_save_wfdc_flag': 'dc'
-}
-
 
 class TrainSearch(object):
     pass
