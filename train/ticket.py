@@ -56,8 +56,9 @@ class Ticket(object):
             8: self.first_class_seat,
             9: self.business_seat
         }
+        level.sort(reverse=True)
         for l in level:
-            result.append({l: seat_map.get(l, '0')})
+            result.append({'train_no': self.train_no, 'type': l, 'usable': seat_map.get(l, 0)})
         return result
 
     @property
@@ -170,7 +171,14 @@ class Ticket(object):
 
     @business_seat.setter
     def business_seat(self, value):
-        self._business_seat = value
+        if value == '':
+            self._business_seat = '--'
+        elif value == '无':
+            self._business_seat = 'no'
+        elif value == '有':
+            self._business_seat = 'yes'
+        else:
+            self._business_seat = value
 
     #  一等座：31
     @property
@@ -179,7 +187,14 @@ class Ticket(object):
 
     @first_class_seat.setter
     def first_class_seat(self, value):
-        self._first_class_seat = value
+        if value == '':
+            self._first_class_seat = '--'
+        elif value == '无':
+            self._first_class_seat = 'no'
+        elif value == '有':
+            self._first_class_seat = 'yes'
+        else:
+            self._first_class_seat = value
 
     #  二等座：30
     @property
@@ -188,7 +203,14 @@ class Ticket(object):
 
     @second_class_seat.setter
     def second_class_seat(self, value):
-        self._second_class_seat = value
+        if value == '':
+            self._second_class_seat = '--'
+        elif value == '无':
+            self._second_class_seat = 'no'
+        elif value == '有':
+            self._second_class_seat = 'yes'
+        else:
+            self._second_class_seat = value
 
     #  高级软卧：21
     @property
@@ -197,7 +219,14 @@ class Ticket(object):
 
     @advanced_soft_sleep.setter
     def advanced_soft_sleep(self, value):
-        self._advanced_soft_sleep = value
+        if value == '':
+            self._advanced_soft_sleep = '--'
+        elif value == '无':
+            self._advanced_soft_sleep = 'no'
+        elif value == '有':
+            self._advanced_soft_sleep = 'yes'
+        else:
+            self._advanced_soft_sleep = value
 
     #  软卧：23
     @property
@@ -206,7 +235,14 @@ class Ticket(object):
 
     @soft_sleep.setter
     def soft_sleep(self, value):
-        self._soft_sleep = value
+        if value == '':
+            self._soft_sleep = '--'
+        elif value == '无':
+            self._soft_sleep = 'no'
+        elif value == '有':
+            self._soft_sleep = 'yes'
+        else:
+            self._soft_sleep = value
 
     #  动卧：33
     @property
@@ -215,7 +251,14 @@ class Ticket(object):
 
     @move_sleep.setter
     def move_sleep(self, value):
-        self._move_sleep = value
+        if value == '':
+            self._move_sleep = '--'
+        elif value == '无':
+            self._move_sleep = 'no'
+        elif value == '有':
+            self._move_sleep = 'yes'
+        else:
+            self._move_sleep = value
 
     #  硬卧：28
     @property
@@ -224,7 +267,14 @@ class Ticket(object):
 
     @hard_sleep.setter
     def hard_sleep(self, value):
-        self._hard_sleep = value
+        if value == '':
+            self._hard_sleep = '--'
+        elif value == '无':
+            self._hard_sleep = 'no'
+        elif value == '有':
+            self._hard_sleep = 'yes'
+        else:
+            self._hard_sleep = value
 
     #  软座：24
     @property
@@ -233,7 +283,14 @@ class Ticket(object):
 
     @soft_seat.setter
     def soft_seat(self, value):
-        self._soft_seat = value
+        if value == '':
+            self._soft_seat = '--'
+        elif value == '无':
+            self._soft_seat = 'no'
+        elif value == '有':
+            self._soft_seat = 'yes'
+        else:
+            self._soft_seat = value
 
     #  硬座：29
     @property
@@ -242,7 +299,14 @@ class Ticket(object):
 
     @hard_seat.setter
     def hard_seat(self, value):
-        self._hard_seat = value
+        if value == '':
+            self._hard_seat = '--'
+        elif value == '无':
+            self._hard_seat = 'no'
+        elif value == '有':
+            self._hard_seat = 'yes'
+        else:
+            self._hard_seat = value
 
     #  无座：26
     @property
@@ -251,7 +315,14 @@ class Ticket(object):
 
     @no_seat.setter
     def no_seat(self, value):
-        self._no_seat = value
+        if value == '':
+            self._no_seat = '--'
+        elif value == '无':
+            self._no_seat = 'no'
+        elif value == '有':
+            self._no_seat = 'yes'
+        else:
+            self._no_seat = value
 
     #  其他：22
     @property

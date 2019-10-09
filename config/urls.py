@@ -20,7 +20,7 @@ URLS = {
         'method': 'get'
     },
     'ticket_query': {
-        'request_url': 'https://kyfw.12306.cn/otn/leftTicket/queryO',
+        'request_url': 'https://kyfw.12306.cn/otn/leftTicket/query',
         'method': 'get',
         'params': {
             'leftTicketDTO.train_date': '',
