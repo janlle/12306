@@ -11,7 +11,10 @@ from urllib import request
 from urllib import parse
 from http import cookiejar
 from util.net_util import *
+from prettytable import PrettyTable
+from colorama import init, Fore
 
+init(autoreset=False)
 
 log_colors_config = {
     'DEBUG': 'cyan',
@@ -67,12 +70,12 @@ def remove_cookie_test():
     pass
 
 
-if __name__ == "__main__":
+def pretty_table_test():
     from prettytable import PrettyTable
 
     x = PrettyTable(["name", "Area", "Population", "Annual Rainfall"])
-
-    x.align["name"] = "l"  # Left align city names
+    x.align = 'l'
+    # x.align["name"] = "l"  # Left align city names
 
     x.padding_width = 1  # One space between column edges and contents (default)
 
@@ -90,4 +93,44 @@ if __name__ == "__main__":
 
     x.add_row(["Perth", 5386, 1554769, 869.4])
     print(x)
+
+
+def pretty_print1():
+    infos = [[11, 12, 13, 14, 15, 16, 17], [21, 22, 23, 24, 25, 26, 27], [31, 32, 33, 34, 35, 36, 37]]
+    ptable = PrettyTable('list1 list2 list3 list4 list5 list6 list7'.split())
+    for info in infos:
+        ptable.add_row(info)
+    print(ptable)
+
+
+def pretty_print2():
+    my_list1 = [11, 12, 13, 14, 15, 16, 17]
+    my_list2 = [21, 22, 23, 24, 25, 26, 27]
+    my_list3 = [31, 32, 33, 34, 35, 36, 37]
+    infos = [my_list1, my_list2, my_list3]
+
+    # 改变列表中第一个元素的颜色
+    # 并高亮显示，加上最后的Fore.RESET，会使得之后的元素不受影响，保持原样
+    my_list1[0] = Fore.LIGHTRED_EX + str(my_list1[0])  # 没有加 Fore.RESET，之后的颜色都为红色
+    my_list2[0] = Fore.LIGHTGREEN_EX + str(my_list2[0]) + Fore.RESET
+    my_list3[0] = Fore.LIGHTYELLOW_EX + str(my_list3[0]) + Fore.RESET
+
+    ptable = PrettyTable('list1 list2 list3 list4 list5 list6 list7'.split())
+    for info in infos:
+        ptable.add_row(info)
+    print(ptable)
+
+
+def pretty_print3():
+    infos = [[11, 12, 13, 14, 15, 16, 17], [21, 22, 23, 24, 25, 26, 27], [31, 32, 33, 34, 35, 36, 37]]
+    ptable = PrettyTable('list1 list2 list3 list4 list5 list6 list7'.split())
+    for info in infos:
+        ptable.add_row(info)
+    print(ptable)
+
+
+if __name__ == "__main__":
+    a = [([0] * 3) for i in range(3)]
+    a[0][0] = 1
+    print(a)
     pass
