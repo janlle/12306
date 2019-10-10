@@ -76,31 +76,15 @@ def pretty_table_test():
     x = PrettyTable(["name", "Area", "Population", "Annual Rainfall"])
     x.align = 'l'
     # x.align["name"] = "l"  # Left align city names
-
     x.padding_width = 1  # One space between column edges and contents (default)
-
     x.add_row(["Adelaide", 1295, 1158259, 600.5])
-
     x.add_row(["Brisbane", 5905, 1857594, 1146.4])
-
     x.add_row(["Darwin", 112, 120900, 1714.7])
-
     x.add_row(["Hobart", 1357, 205556, 619.5])
-
     x.add_row(["Sydney", 2058, 4336374, 1214.8])
-
     x.add_row(["Melbourne", 1566, 3806092, 646.9])
-
     x.add_row(["Perth", 5386, 1554769, 869.4])
     print(x)
-
-
-def pretty_print1():
-    infos = [[11, 12, 13, 14, 15, 16, 17], [21, 22, 23, 24, 25, 26, 27], [31, 32, 33, 34, 35, 36, 37]]
-    ptable = PrettyTable('list1 list2 list3 list4 list5 list6 list7'.split())
-    for info in infos:
-        ptable.add_row(info)
-    print(ptable)
 
 
 def pretty_print2():
@@ -108,7 +92,6 @@ def pretty_print2():
     my_list2 = [21, 22, 23, 24, 25, 26, 27]
     my_list3 = [31, 32, 33, 34, 35, 36, 37]
     infos = [my_list1, my_list2, my_list3]
-
     # 改变列表中第一个元素的颜色
     # 并高亮显示，加上最后的Fore.RESET，会使得之后的元素不受影响，保持原样
     my_list1[0] = Fore.LIGHTRED_EX + str(my_list1[0])  # 没有加 Fore.RESET，之后的颜色都为红色
@@ -121,16 +104,16 @@ def pretty_print2():
     print(ptable)
 
 
-def pretty_print3():
-    infos = [[11, 12, 13, 14, 15, 16, 17], [21, 22, 23, 24, 25, 26, 27], [31, 32, 33, 34, 35, 36, 37]]
-    ptable = PrettyTable('list1 list2 list3 list4 list5 list6 list7'.split())
-    for info in infos:
-        ptable.add_row(info)
-    print(ptable)
+def call_back():
+    count = 1
+    if 100 / 50 == 0:
+        print("success")
+    else:
+        count += 1
+        print(count)
+        call_back()
 
 
 if __name__ == "__main__":
-    a = [([0] * 3) for i in range(3)]
-    a[0][0] = 1
-    print(a)
+    call_back()
     pass

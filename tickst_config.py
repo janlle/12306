@@ -8,10 +8,10 @@ ACCOUNT = 'xxx'
 PASSWORD = 'xxx'
 
 # 出发站
-FROM_STATION = '武昌'
+FROM_STATION = 'xxx'
 
 # 到达站
-TO_STATION = '长沙'
+TO_STATION = 'xxx'
 
 # 出发时间,例如: 2019-10-15
 DATE = '2019-11-03'
@@ -20,7 +20,7 @@ DATE = '2019-11-03'
 USER = ['xxx']
 
 # 车次
-TRAINS_NO = ['K81', 'K635']
+TRAINS_NO = ['xxx', 'xxx']
 
 # ====================== 非必填项 ======================
 

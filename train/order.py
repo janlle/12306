@@ -32,8 +32,8 @@ class Order(object):
         self.seat_type = config.SEAT_TYPE[0]
         self.date = config.DATE
         self.submit_token = None
-        self.ticket = ticket
         self.passenger = None
+        self.ticket = ticket
 
     def submit(self):
         """提交车票信息"""
@@ -80,9 +80,7 @@ class Order(object):
         request_params = self.passenger_url.get('params')
         # api.session.cookies.clear()
         request_params['REPEAT_SUBMIT_TOKEN'] = self.submit_token['repeat_submit_token']
-        print(api.session.cookies.get_dict())
         passengers_data = api.post(request_url, request_params)
-        print(passengers_data.json())
         if passengers_data.status_code == 200:
             passengers = passengers_data.json()['data']['normal_passengers']
             if passengers and len(passengers) > 0:
@@ -188,17 +186,20 @@ class Order(object):
         count = 1
         request_url = self.order_callback_url.get('request_url')
         request_url = request_url.format(util.timestamp(), 'dc')
-        order_callback_response = api.get(request_url)
-        if order_callback_response:
-            response_json = order_callback_response.json()
-            if response_json['data']['orderId']:
-                log.info('抢票成功,请登录12306我的火车票订单支付车票!')
-                return 'success'
+        while True:
+            order_callback_response = api.get(request_url)
+            if order_callback_response and 'application/json' in order_callback_response.headers.get('Content-Type'):
+                response_json = order_callback_response.json()
+                if response_json['data']['orderId']:
+                    log.info('下单成功,请登录12306我的火车票订单支付车票!')
+                    break
+                else:
+                    count += 1
+                    log.info('购票结果查询中，第 {} 次查询'.format(count))
+                    time.sleep(2)
             else:
-                time.sleep(1)
-                count += 1
-                log.info('第: {} 次查询'.format(count))
-                self.order_callback()
+                log.error('订单结果查询异常')
+                break
 
     def __str__(self):
         return '[乘车人: %s, 出发站: %s, 到达站: %s, 车次: %s, 座位: %s, 出发时间: %s %s:00]' % (
@@ -212,24 +213,29 @@ class Order(object):
         """
         request_url = self.unfinished_order_url.get('request_url')
         request_params = self.unfinished_order_url.get('params')
-        print(request_url)
-        print(request_params)
         response = api.post(request_url, data=request_params)
-        if response:
-            print(response.json())
-        pass
+        if response and response.json()['httpstatus'] == 200:
+            response_json = response.json()
+            if 'data' in response_json.keys():
+                ticket_list = response.json()['data']['orderDBList']
+                if len(ticket_list) > 0:
+                    log.info('You have an outstanding order please cancel it or pay it')
+                return not len(ticket_list) > 0
+        return True
 
 
 if __name__ == '__main__':
     t = Ticket()
     t.leave_time = '2019-11-07'
     t.secret_str = 'kFb1rqYphydFW/FWBN6NAXE2rZ5BvA7sWvrhfphQ32m65fnQ9zBfNKcG64A9i0RQvSj9zbLJtza13uQ82gRN03TYraKALaC1OOmSs5BcF/P3N5C27XpGcqwRV1mkq+F5a6G+nHE9CBz1+QQPukvnuHCTkNXYNO5Jf4M8UNjuGoi7W6C3G+7GcExnWFXMtRpSvUrtiz/6UsEVBBlBmw++xuMKT7tNdxhx7hacczWV1ViEJ02whoPONM7Y9SzodsDE+T7ZpLd59MbOl+ajlbhZ1UHIX9mGlXZ2tF6Ji1g2DdRGtAjnES/1Cg=='
-    t.from_station = '武昌'
-    t.to_station = '长沙'
+    t.from_station = ''
+    t.to_station = ''
     t.train_no = 'K81'
+    from train.login import Login
+
+    login = Login()
+    login.login()
+
     order = Order(t)
-    api.load_cookie()
-    print(api.session.cookies.get_dict())
-    order.search_unfinished_order()
-    # log.info('车票购买排队中,请稍后...')
-    # order.order_callback()
+    # api.load_cookie()
+    print(order.search_unfinished_order())
