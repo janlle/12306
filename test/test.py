@@ -1,7 +1,7 @@
 # coding:utf-8
-# coding:utf-8
+
 import logging
-from logging.handlers import RotatingFileHandler  # 按文件大小滚动备份
+from logging.handlers import RotatingFileHandler
 import time
 import datetime
 import os
