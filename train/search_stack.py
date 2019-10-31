@@ -3,13 +3,10 @@
 import datetime
 
 import prettytable
-from colorama import Fore
 import config.stations as stations
 import config.urls as urls
 from train.ticket import Ticket
 from util.net_util import api
-from util.app_util import current_date
-import tickst_config as config
 
 ticket_data_index = {
     # 车次: 3
@@ -70,19 +67,11 @@ def search_stack(from_station, to_station,
     api.load_cookie()
 
     result = []
-    params = urls.URLS.get('ticket_query').get('params')
-    params['leftTicketDTO.train_date'] = train_date
-    params['leftTicketDTO.from_station'] = stations.get_by_name(from_station)
-    params['leftTicketDTO.to_station'] = stations.get_by_name(to_station)
-    params['purpose_codes'] = purpose
-
-    url = urls.URLS.get('ticket_query').get('request_url')
-
-    response = api.get(url, params=params)
-    if response and 'application/json' in response.headers.get('Content-Type'):
-        body = response.json()
-        if body['httpstatus'] == 200:
-            result = body['data']['result']
+    url = urls.URLS.get('ticket_query').get('request_url').format(train_date, stations.get_by_name(from_station),
+                                                                  stations.get_by_name(to_station), purpose)
+    response_search = api.get(url).json()
+    if response_search['httpstatus'] == 200:
+        result = response_search['data']['result']
     return decode_data(result, train_no, purpose)
 
 
@@ -155,7 +144,6 @@ def show_tickets(tickets):
 
 
 if __name__ == '__main__':
-    # res = search_stack('武昌', '长沙', train_no='K81', train_date='2019-11-03')
     res = search_stack('武昌', '长沙', train_date='2019-11-03')
     print(len(res))
     show_tickets(res)

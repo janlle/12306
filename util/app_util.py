@@ -8,14 +8,8 @@ import telnetlib
 import time
 import urllib
 
-# from util.logger import Logger
-
-
 GMT_FORMAT = '%a %b %d %Y %H:%M:%S GMT+0800 (中国标准时间)'
 locale.setlocale(locale.LC_CTYPE, 'chinese')
-
-
-# log = Logger(__name__)
 
 
 def get_root_path():
@@ -76,4 +70,4 @@ def get_gmt_time(text):
 
 
 if __name__ == '__main__':
-    print(current_date())
+    print(current_timestamp())

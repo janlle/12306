@@ -61,23 +61,18 @@ class Login(object):
         request_params['password'] = self.password
         request_params['answer'] = self.answer
 
-        login_headers = self.login_url.get('headers')
-        login_headers['User-Agent'] = UserAgent().random
-
         while True:
             login_count += 1
             self.check_captcha(self.auto_identify)
             # start login
             try:
-                login_response = api.post(request_url, data=request_params,
-                                          headers=login_headers)
-                content_type = login_response.headers.get('Content-Type')
-                if 'application/json' in content_type and login_response.json()['result_code'] == 0:
+                login_response = api.post(request_url, data=request_params)
+                if login_response.json()['result_code'] == 0:
                     log.info('login success login frequency is {}'.format(login_count))
                     self.check_login_status()
                     api.save_cookie()
                     break
-                elif login_response.headers.get('Content-Type') == 'text/html':
+                else:
                     log.error('login failed!')
                     time.sleep(2)
             except Exception as e:
@@ -150,13 +145,11 @@ class Login(object):
         elif auto_identify == 1:
             img = Image.open(BytesIO(base64.b64decode(base64_code)))
             img.show()
-            print(u"""
-                    *****************
-                    | 1 | 2 | 3 | 4 |
-                    *****************
-                    | 5 | 6 | 7 | 8 |
-                    *****************
-                    """)
+            log.info('*****************')
+            log.info('| 1 | 2 | 3 | 4 |')
+            log.info('*****************')
+            log.info('| 5 | 6 | 7 | 8 |')
+            log.info('*****************')
             res = input('请输入答案的位置(多个答案使用英文逗号分隔): ')
             try:
                 location = res.split(',')
@@ -171,16 +164,17 @@ class Login(object):
         # 校验验证码 parse.quote(self.answer)
         request_url = self.check_captcha_url.get('request_url').format(self.answer, timestamp())
 
-        check_captcha_response = api.get(request_url)
-        if check_captcha_response.status_code == 200 and 'application/json' in check_captcha_response.headers.get(
-                'Content-Type'):
-            log.info(check_captcha_response.json()['result_message'])
-        else:
-            log.error('验证码校验失败')
+        import requests
+        headers = {
+            "Cookie": "Cookie: _passport_session=812ec07d200c4839a3f9e98b86bb977c2076; _passport_ct=bea9da12639941aa8d05e9096d714a9dt6312; _jc_save_wfdc_flag=dc; BIGipServerpool_passport=283968010.50215.0000; BIGipServerotn=1190134282.24610.0000; RAIL_EXPIRATION=1572816794080; RAIL_DEVICEID=tdmg9AIuQahrr9EJedoeYdXproh7wahbab59ytL12NDCpaStU-pVQrWRLx5WgXldFPrqhazpUPd3C1qv9PNQBDrePpIsq92x1Scazpx60XXM7ycymFknEnun64hz_1yP-OyxZ5fhanLGgxHFTLpCxyY_u9TgAGfu; route=9036359bb8a8a461c164a04f8f50b252; _jc_save_fromStation=%u6B66%u6C49%2CWHN; _jc_save_toStation=%u957F%u6C99%2CCSQ; _jc_save_fromDate=2019-11-25; _jc_save_toDate=2019-10-31"
+        }
+        # check_captcha_response = requests.get(request_url, verify=False, headers=headers).json()
+        check_captcha_response = api.get(request_url).json()
+        log.info(check_captcha_response['result_message'])
 
     def get_captcha(self):
         """
-        get a 12306 captcha
+        Get a 12306 captcha
         """
         request_url = self.captcha_url.get('request_url')
         return api.get(request_url).json()['image']

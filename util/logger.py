@@ -4,15 +4,8 @@ import logging
 from util.app_util import get_root_path
 
 
-formatter = "%(asctime)s %(levelname)-9s %(process)-5d --- %(filename)-16s[line:%(lineno)3d]: %(message)s"
+formatter = "%(asctime)s %(levelname)-9s %(process)-5d [line:%(lineno)3d]: %(message)s"
 log_path = get_root_path() + "/tickets.log"
-log_colors = {
-    'DEBUG': 'cyan',
-    'INFO': 'green',
-    'WARNING': 'yellow',
-    'ERROR': 'red',
-    'CRITICAL': 'red',
-}
 
 
 class Logger(object):
