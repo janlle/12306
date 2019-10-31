@@ -9,6 +9,7 @@ from train.passenger import Passenger
 from train.search_stack import *
 from util.logger import Logger
 from util.net_util import api
+import tickst_config as config
 
 log = Logger(__name__)
 api.load_cookie()
@@ -25,14 +26,16 @@ class Order(object):
         self.confirm_submit_url = urls.URLS.get('confirm_submit_url')
         self.order_callback_url = urls.URLS.get('order_callback_url')
         self.unfinished_order_url = urls.URLS.get('unfinished_order_url')
-        self.passenger_name = config.USER[0]
+        self.passenger_names = config.USER
+        if len(self.passenger_names) < 1:
+            raise BaseException('passenger must be not null')
         self.from_station = config.FROM_STATION
         self.to_station = config.TO_STATION
         self.train_no = config.TRAINS_NO[0]
         self.seat_type = config.SEAT_TYPE[0]
         self.date = config.DATE
         self.submit_token = None
-        self.passenger = None
+        self.passenger_list = []
         self.ticket = ticket
 
     def submit(self):
@@ -48,8 +51,7 @@ class Order(object):
         if submit_order_response and submit_order_response.json()['httpstatus'] == 200:
             # get submit token
             self.submit_token = self.get_submit_token()
-            self.passenger = self.get_passenger(self.passenger_name)[0]
-            log.info(submit_order_response.json())
+            self.passenger_list = self.get_passenger(self.passenger_names)
             self.check_order()
         else:
             log.info('submit order error')
@@ -60,15 +62,27 @@ class Order(object):
         """
         request_url = self.check_order_info.get('request_url')
         request_params = self.check_order_info.get('params')
-        request_params['passengerTicketStr'] = self.passenger.passenger_ticket_str(self.seat_type)
-        request_params['oldPassengerStr'] = self.passenger.old_passenger_str()
+        passenger_ticket_str = ''
+        old_passenger_str = ''
+        for passenger in self.passenger_list:
+            passenger_ticket_str += (passenger.passenger_ticket_str(self.seat_type) + '_')
+            old_passenger_str += passenger.old_passenger_str()
+
+        passenger_ticket_str = passenger_ticket_str[0:-1]
+
+        request_params['passengerTicketStr'] = passenger_ticket_str
+        request_params['oldPassengerStr'] = old_passenger_str
         request_params['REPEAT_SUBMIT_TOKEN'] = self.submit_token['repeat_submit_token']
 
-        check_order_response = api.post(request_url, data=request_params)
-        log.info(check_order_response.json())
-        if check_order_response and check_order_response.json()['httpstatus'] == 200:
-            self.get_query_count()
-            self.confirm_submit()
+        check_order_response = api.post(request_url, data=request_params).json()
+        if check_order_response.get('httpstatus') == 200:
+            if check_order_response.get('data').get('submitStatus'):
+                self.get_query_count()
+                self.confirm_submit()
+            else:
+                log.info(check_order_response.get('data').get('errMsg'))
+                import sys
+                sys.exit(0)
 
     def get_passenger(self, name=None):
         """
@@ -106,8 +120,8 @@ class Order(object):
                     i.index_id = p['index_id']
                     i.all_enc_str = p['allEncStr']
                     passengers_list.append(i)
-                if name:
-                    return list(filter(lambda passenger: passenger.passenger_name == name, passengers_list))
+                if name and len(name) > 0:
+                    return list(filter(lambda passenger: passenger.passenger_name in name, passengers_list))
                 else:
                     return passengers_list
 
@@ -154,7 +168,7 @@ class Order(object):
         request_params['REPEAT_SUBMIT_TOKEN'] = self.submit_token['repeat_submit_token']
         query_count = api.post(request_url, data=request_params)
         if query_count and query_count.json()['httpstatus'] == 200:
-            log.info(query_count.json())
+            log.info('get Queue Count success')
         else:
             log.error('get_query_count error')
 
@@ -167,8 +181,17 @@ class Order(object):
 
         request_url = self.confirm_submit_url.get('request_url')
         request_params = self.confirm_submit_url.get('params')
-        request_params['oldPassengerStr'] = self.passenger.old_passenger_str()
-        request_params['passengerTicketStr'] = self.passenger.passenger_ticket_str(self.seat_type)
+        passenger_ticket_str = ''
+        old_passenger_str = ''
+        for passenger in self.passenger_list:
+            passenger_ticket_str += (passenger.passenger_ticket_str(self.seat_type) + '_')
+            old_passenger_str += passenger.old_passenger_str()
+
+        passenger_ticket_str = passenger_ticket_str[0:-1]
+
+        request_params['oldPassengerStr'] = old_passenger_str
+        request_params['passengerTicketStr'] = passenger_ticket_str
+
         request_params['purpose_codes'] = ticket_info_for_passenger_form['purpose_codes']
         request_params['key_check_isChange'] = ticket_info_for_passenger_form['key_check_isChange']
         request_params['leftTicketStr'] = ticket_info_for_passenger_form['leftTicketStr']
@@ -178,7 +201,7 @@ class Order(object):
 
         confirm_submit_response = api.post(request_url, data=request_params)
         if confirm_submit_response:
-            log.info(confirm_submit_response.json())
+            log.info('confirm submit success')
         else:
             log.error('confirm_submit error')
 
@@ -187,23 +210,21 @@ class Order(object):
         request_url = self.order_callback_url.get('request_url')
         request_url = request_url.format(util.timestamp(), 'dc')
         while True:
-            order_callback_response = api.get(request_url)
-            if order_callback_response and 'application/json' in order_callback_response.headers.get('Content-Type'):
-                response_json = order_callback_response.json()
-                if response_json['data']['orderId']:
-                    log.info('下单成功,请登录12306我的火车票订单支付车票!')
+            order_callback_response = api.get(request_url).json()
+            if order_callback_response.get('data', None):
+                if order_callback_response.get('data').get('orderId', None):
+                    log.info('下单成功,请登录 12306 订单中心 -> 火车票订单 -> 未完成订单，支付订单!')
                     break
                 else:
-                    count += 1
-                    log.info('购票结果查询中，第 {} 次查询'.format(count))
-                    time.sleep(2)
+                    log.info('下单失败')
             else:
-                log.error('订单结果查询异常')
-                break
+                count += 1
+                log.info('购票结果查询中，第 {} 次查询...'.format(count))
+            time.sleep(2)
 
     def __str__(self):
         return '[乘车人: %s, 出发站: %s, 到达站: %s, 车次: %s, 座位: %s, 出发时间: %s %s:00]' % (
-            self.passenger_name, self.from_station, self.to_station, self.train_no, self.seat_type, self.date,
+            self.passenger_names, self.from_station, self.to_station, self.train_no, self.seat_type, self.date,
             self.ticket.leave_time)
 
     def search_unfinished_order(self):
@@ -231,11 +252,3 @@ if __name__ == '__main__':
     t.from_station = ''
     t.to_station = ''
     t.train_no = 'K81'
-    from train.login import Login
-
-    login = Login()
-    login.login()
-
-    order = Order(t)
-    # api.load_cookie()
-    print(order.search_unfinished_order())

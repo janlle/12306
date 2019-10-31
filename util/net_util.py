@@ -19,49 +19,44 @@ log = logger.Logger(__name__)
 
 class Http(object):
 
-    def __init__(self, timeout=30, retry=3):
+    def __init__(self, timeout=1000, retry=3):
         self.session = requests.Session()
         self.timeout = timeout
         self.retry_num = retry
         self.proxy_spider = ProxySpider()
         # self.proxy = self.proxy_spider.get_able_proxy()
-        self.session.headers = {'User-Agent': UserAgent().random}
+        self.session.headers = {'User-Agent': UserAgent().random, 'Accept': '*/*'}
         self.proxy = None
 
-    def get(self, url, data=None, headers=None, params=None):
-        result = None
+    def get(self, url, headers=None, data=None):
         try:
-            if isinstance(params, dict):
-                url += ("?" + parse.urlencode(params))
-            # log.info('GET: ' + url)
             response = self.session.get(url=url, data=data, headers=headers, timeout=self.timeout, verify=False,
                                         allow_redirects=False, proxies=self.proxy)
             if response.status_code == 200:
-                result = response
+                return response
             else:
                 log.error("GET error status code: %d url: %s" % (response.status_code, url))
+                raise BaseException('get failed response status code is not 200')
         except Exception as e:
             log.error('GET ' + str(e) + ' url: ' + url)
-        return result
 
     def post(self, url, json=None, headers=None, data=None):
-        result = None
-        # log.info('POST: ' + url)
         try:
             response = self.session.post(url=url, data=data, json=json, headers=headers, timeout=self.timeout,
                                          verify=False,
                                          allow_redirects=False, proxies=self.proxy)
             if response.status_code == 200:
-                result = response
+                return response
             else:
                 log.error("POST error status code: %d url: %s" % (response.status_code, url))
+                raise BaseException('post failed response status code is not 200')
         except Exception as e:
             log.error('POST ' + str(e) + ' url: ' + url)
-        return result
 
-    def request(self, url, method='GET', headers=None, data=None):
+    def request(self, url, method='GET', headers=None, data=None, params=None):
         return self.session.request(method=method,
                                     url=url,
+                                    params=params,
                                     proxies=self.proxy,
                                     data=data,
                                     headers=headers,
@@ -101,5 +96,5 @@ class Http(object):
 api = Http()
 
 if __name__ == '__main__':
-    r = api.get('https://www.baidu.com')
-    print(r.status_code)
+    r = api.get('https://kyfw.12306.cn/passport/captcha/captcha-check?answer=40,77&rand=sjrand&login_site=E&_=1572501115466')
+    print(r.json())
