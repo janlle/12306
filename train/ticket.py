@@ -39,6 +39,7 @@ class Ticket(object):
         self._start_date = ''
 
         self._seat_type = ''
+        self._seat_count = 0
 
     def get_seat_level(self, level):
         """
@@ -375,6 +376,14 @@ class Ticket(object):
     @seat_type.setter
     def seat_type(self, value):
         self._seat_type = value
+
+    @property
+    def seat_count(self):
+        return self._seat_count
+
+    @seat_count.setter
+    def seat_count(self, value):
+        self._seat_count = value
 
     def __str__(self):
         return '[车次: %s, 出发站: %s, 到达站: %s, 出发时间: %s, 到达时间: %s]' % (

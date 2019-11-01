@@ -51,12 +51,16 @@ class Order(object):
         if submit_order_response and submit_order_response.json()['httpstatus'] == 200:
             # get submit token
             self.submit_token = self.get_submit_token()
-            self.passenger_list = self.get_passenger(self.passenger_names)
-            self.check_order()
+            # 获取乘车人
+            if len(self.passenger_names) > self.ticket.seat_count:
+                self.passenger_list = self.get_passenger(self.passenger_names[0:self.ticket.seat_count])
+            else:
+                self.passenger_list = self.get_passenger(self.passenger_names)
+            self.check_order(self.ticket.seat_type)
         else:
             log.info('submit order error')
 
-    def check_order(self):
+    def check_order(self, seat_type):
         """
         :return:
         """
@@ -65,7 +69,7 @@ class Order(object):
         passenger_ticket_str = ''
         old_passenger_str = ''
         for passenger in self.passenger_list:
-            passenger_ticket_str += (passenger.passenger_ticket_str(self.seat_type) + '_')
+            passenger_ticket_str += (passenger.passenger_ticket_str(seat_type) + '_')
             old_passenger_str += passenger.old_passenger_str()
 
         passenger_ticket_str = passenger_ticket_str[0:-1]
@@ -77,14 +81,15 @@ class Order(object):
         check_order_response = api.post(request_url, data=request_params).json()
         if check_order_response.get('httpstatus') == 200:
             if check_order_response.get('data').get('submitStatus'):
-                self.get_query_count()
-                self.confirm_submit()
+                self.get_query_count(seat_type)
+                self.confirm_submit(seat_type)
             else:
                 log.info(check_order_response.get('data').get('errMsg'))
                 import sys
                 sys.exit(0)
 
     def get_passenger(self, name=None):
+        print(name)
         """
         get account added passenger
         :param name:
@@ -148,7 +153,7 @@ class Order(object):
             'order_request_params': json.loads(order_request_dto.replace('\'', '\"'))
         }
 
-    def get_query_count(self):
+    def get_query_count(self, seat_type):
         """
         query order count
         :return:
@@ -160,7 +165,7 @@ class Order(object):
         request_params['fromStationTelecode'] = stations.get_by_name(self.from_station)
         request_params['toStationTelecode'] = stations.get_by_name(self.to_station)
         request_params['stationTrainCode'] = self.train_no
-        request_params['seatType'] = self.seat_type
+        request_params['seatType'] = seat_type
         request_params['leftTicketStr'] = ticket_info_for_passenger_form['leftTicketStr']
         request_params['purpose_codes'] = ticket_info_for_passenger_form['purpose_codes']
         request_params['train_location'] = ticket_info_for_passenger_form['train_location']
@@ -172,7 +177,7 @@ class Order(object):
         else:
             log.error('get_query_count error')
 
-    def confirm_submit(self):
+    def confirm_submit(self, seat_type):
         """
         confirm submit order
         :return:
@@ -184,7 +189,7 @@ class Order(object):
         passenger_ticket_str = ''
         old_passenger_str = ''
         for passenger in self.passenger_list:
-            passenger_ticket_str += (passenger.passenger_ticket_str(self.seat_type) + '_')
+            passenger_ticket_str += (passenger.passenger_ticket_str(seat_type) + '_')
             old_passenger_str += passenger.old_passenger_str()
 
         passenger_ticket_str = passenger_ticket_str[0:-1]
@@ -216,10 +221,10 @@ class Order(object):
                     log.info('下单成功,请登录 12306 订单中心 -> 火车票订单 -> 未完成订单，支付订单!')
                     break
                 else:
-                    log.info('下单失败')
+                    count += 1
+                    log.info('购票结果查询中，第 {} 次查询...'.format(count))
             else:
-                count += 1
-                log.info('购票结果查询中，第 {} 次查询...'.format(count))
+                log.info('下单失败')
             time.sleep(2)
 
     def __str__(self):
@@ -249,6 +254,4 @@ if __name__ == '__main__':
     t = Ticket()
     t.leave_time = '2019-11-07'
     t.secret_str = 'kFb1rqYphydFW/FWBN6NAXE2rZ5BvA7sWvrhfphQ32m65fnQ9zBfNKcG64A9i0RQvSj9zbLJtza13uQ82gRN03TYraKALaC1OOmSs5BcF/P3N5C27XpGcqwRV1mkq+F5a6G+nHE9CBz1+QQPukvnuHCTkNXYNO5Jf4M8UNjuGoi7W6C3G+7GcExnWFXMtRpSvUrtiz/6UsEVBBlBmw++xuMKT7tNdxhx7hacczWV1ViEJ02whoPONM7Y9SzodsDE+T7ZpLd59MbOl+ajlbhZ1UHIX9mGlXZ2tF6Ji1g2DdRGtAjnES/1Cg=='
-    t.from_station = ''
-    t.to_station = ''
     t.train_no = 'K81'
