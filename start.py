@@ -88,4 +88,5 @@ if __name__ == '__main__':
                         break
                     else:
                         log.warning('There is no proper ticket, prepare the next query {}'.format(count))
+                        time.sleep(1)
             break

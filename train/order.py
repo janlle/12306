@@ -89,7 +89,6 @@ class Order(object):
                 sys.exit(0)
 
     def get_passenger(self, name=None):
-        print(name)
         """
         get account added passenger
         :param name:

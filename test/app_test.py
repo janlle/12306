@@ -49,7 +49,4 @@ if __name__ == "__main__":
     #     'https://kyfw.12306.cn/passport/captcha/captcha-check?answer=40,77&rand=sjrand&login_site=E&_=1572501115466',
     #     verify=False)
     # print(res.json())
-    if {}:
-        print("true")
-
     pass
