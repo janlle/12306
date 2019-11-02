@@ -43,7 +43,7 @@ class Ticket(object):
 
     def get_seat_level(self, level):
         """
-        商务座(9), 一等座(9), 二等座(7), 高级软卧(6), 软卧(5), 动卧(4), 硬卧(3), 软座(2), 硬座(1), 无座(0)
+        商务座(9), 一等座(8), 二等座(7), 高级软卧(6), 软卧(5), 动卧(4), 硬卧(3), 软座(2), 硬座(1), 无座(0)
         :return:
         """
         result = []
@@ -63,6 +63,27 @@ class Ticket(object):
         for l in level:
             result.append({'train_no': self.train_no, 'type': l, 'usable': seat_map.get(l, 0)})
         return result
+
+    @staticmethod
+    def get_seat_name(key):
+        """
+        商务座(9), 一等座(8), 二等座(7), 高级软卧(6), 软卧(5), 动卧(4), 硬卧(3), 软座(2), 硬座(1), 无座(0)
+        :param key:
+        :return:
+        """
+        seat_map = {
+            0: '无座',
+            1: '硬座',
+            2: '软座',
+            3: '硬卧',
+            4: '动卧',
+            5: '软卧',
+            6: '高级软卧',
+            7: '二等座',
+            8: '一等座',
+            9: '商务座'
+        }
+        return seat_map.get(key)
 
     @property
     def train_no(self):

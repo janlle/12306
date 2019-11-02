@@ -13,6 +13,7 @@ from config.stations import get_by_name
 from util.app_util import *
 from util.net_util import *
 from verify import verify_code
+import re
 
 log = logger.Logger(__name__)
 urllib3.disable_warnings()
@@ -66,15 +67,24 @@ class Login(object):
             self.check_captcha(self.auto_identify)
             # start login
             try:
-                login_response = api.post(request_url, data=request_params)
-                if login_response.json()['result_code'] == 0:
-                    log.info('login success login frequency is {}'.format(login_count))
+                login_response = api.post(request_url, data=request_params).json()
+                message = login_response['result_message']
+                if login_response['result_code'] == 0:
+                    log.info('{}，共登录 {} 次'.format(message, login_count))
                     self.check_login_status()
                     api.save_cookie()
                     break
                 else:
-                    log.error('login failed!')
-                    time.sleep(2)
+                    log.error(login_response['result_message'])
+                    if message.startswith('您的用户已经被锁定'):
+                        t = re.findall(r'[1-9]\d*', message)
+                        if t and len(t) > 0:
+                            print('sleep' + str(t[0]))
+                            time.sleep(int(t[0]) * 60)
+                        else:
+                            time.sleep(5)
+                    else:
+                        time.sleep(5)
             except Exception as e:
                 log.error(e)
 
@@ -100,13 +110,11 @@ class Login(object):
         request_url = self.device_id_url.get('request_url').format(timestamp())
         device_info_response = api.get(request_url)
 
-        if device_info_response.status_code == 200:
-            try:
-                device_info = json.loads(device_info_response.text[18:-2])
-                api.set_cookie(RAIL_DEVICEID=device_info.get('dfp'), RAIL_EXPIRATION=device_info.get('exp'))
-            except Exception as e:
-                log.error(e)
-        else:
+        try:
+            device_info = json.loads(device_info_response.text[18:-2])
+            api.set_cookie(RAIL_DEVICEID=device_info.get('dfp'), RAIL_EXPIRATION=device_info.get('exp'))
+        except Exception as e:
+            log.error(e)
             log.error('Failed to obtain device fingerprint')
 
     def check_login_status(self):
@@ -117,16 +125,16 @@ class Login(object):
         try:
             request_url = self.uamtk_url.get('request_url')
             request_params = self.uamtk_url.get('params')
-            response = api.post(request_url, data=request_params)
-            if response and response.json()['result_code'] == 0:
+            response = api.post(request_url, data=request_params).json()
+            if response['result_code'] == 0:
                 request_url = self.uamauthclient_url.get('request_url')
                 request_params = self.uamauthclient_url.get('params')
-                request_params['tk'] = response.json()['newapptk']
-                response = api.post(request_url, data=request_params)
-                if response:
-                    log.info(response.json()['验证通过'])
+                request_params['tk'] = response['newapptk']
+                response = api.post(request_url, data=request_params).json()
+                if response.get('result_code') == 0:
+                    log.info('{}，用户名: {}'.format(response.get('result_message'), response.get('username')))
                 else:
-                    log.info('user check failed')
+                    log.info(response.get('result_message', 'error'))
         except BaseException as e:
             log.error(e)
 
@@ -164,11 +172,6 @@ class Login(object):
         # 校验验证码 parse.quote(self.answer)
         request_url = self.check_captcha_url.get('request_url').format(self.answer, timestamp())
 
-        import requests
-        headers = {
-            "Cookie": "Cookie: _passport_session=812ec07d200c4839a3f9e98b86bb977c2076; _passport_ct=bea9da12639941aa8d05e9096d714a9dt6312; _jc_save_wfdc_flag=dc; BIGipServerpool_passport=283968010.50215.0000; BIGipServerotn=1190134282.24610.0000; RAIL_EXPIRATION=1572816794080; RAIL_DEVICEID=tdmg9AIuQahrr9EJedoeYdXproh7wahbab59ytL12NDCpaStU-pVQrWRLx5WgXldFPrqhazpUPd3C1qv9PNQBDrePpIsq92x1Scazpx60XXM7ycymFknEnun64hz_1yP-OyxZ5fhanLGgxHFTLpCxyY_u9TgAGfu; route=9036359bb8a8a461c164a04f8f50b252; _jc_save_fromStation=%u6B66%u6C49%2CWHN; _jc_save_toStation=%u957F%u6C99%2CCSQ; _jc_save_fromDate=2019-11-25; _jc_save_toDate=2019-10-31"
-        }
-        # check_captcha_response = requests.get(request_url, verify=False, headers=headers).json()
         check_captcha_response = api.get(request_url).json()
         log.info(check_captcha_response['result_message'])
 
@@ -217,6 +220,4 @@ class Login(object):
 if __name__ == '__main__':
     login = Login()
     login.login()
-    # login.check_captcha(1)
-
     pass

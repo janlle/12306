@@ -109,7 +109,7 @@ URLS = {
         }
     },
     'devices_id_url': {
-        'request_url': 'https://kyfw.12306.cn/otn/HttpZF/logdevice?algID=I7N8Qp6Crv&hashCode=ixGGIhYuLOs3wUc5ts3bYxTJHPSXj-uNvQ3Hunf6fxY&FMQw=0&q4f3=en-US&VPIf=1&custID=133&VEek=unknown&dzuS=0&yD16=0&EOQP=8f58b1186770646318a429cb33977d8c&lEnu=3232235525&jp76=52d67b2a5aa5e031084733d5006cc664&hAqN=Win32&platform=WEB&ks0Q=d22ca0b81584fbea62237b14bd04c866&TeRS=1040x1920&tOHY=24xx1080x1920&Fvje=i1l1o1s1&q5aJ=-8&wNLf=99115dfb07133750ba677d055874de87&0aew=Mozilla/5.0%20(Windows%20NT%2010.0;%20Win64;%20x64)%20AppleWebKit/537.36%20(KHTML,%20like%20Gecko)%20Chrome/77.0.3865.120%20Safari/537.36&E3gR=a8d3bc9d2562c4293ff477e3ddaf9c8d&timestamp={}',
+        'request_url': 'https://kyfw.12306.cn/otn/HttpZF/logdevice?algID=3LHTeOHURH&hashCode=XaNBGNf-rcK6Bdc1k85bc5YxqnTZtZHogvqp0Oi49kU&FMQw=0&q4f3=en-US&VPIf=1&custID=133&VEek=unknown&dzuS=0&yD16=0&EOQP=8f58b1186770646318a429cb33977d8c&jp76=52d67b2a5aa5e031084733d5006cc664&hAqN=Win32&platform=WEB&ks0Q=d22ca0b81584fbea62237b14bd04c866&TeRS=1040x1920&tOHY=24xx1080x1920&Fvje=i1l1o1s1&q5aJ=-8&wNLf=99115dfb07133750ba677d055874de87&0aew=Mozilla/5.0%20(Windows%20NT%2010.0;%20Win64;%20x64)%20AppleWebKit/537.36%20(KHTML,%20like%20Gecko)%20Chrome/78.0.3904.87%20Safari/537.36&E3gR=754a1b5bb84f27a8a3a154318890da08&timestamp={}',
         'method': 'get'
     },
     'conf_url': {

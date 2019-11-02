@@ -13,6 +13,7 @@ import tickst_config as config
 import util.app_util as util
 import time
 from train.order import Order
+import threadpool
 
 log = Logger(__name__)
 
@@ -49,7 +50,6 @@ if __name__ == '__main__':
                 if config.SEAT_TYPE:
                     ticket_list = [i for i in ticket_list if i.train_no in config.TRAINS_NO]
                     show_tickets(ticket_list)
-                    log.info('There are qualified trains total %d' % len(ticket_list))
                     seat_level_all = [([0] * len(config.TRAINS_NO)) for i in range(len(config.SEAT_TYPE))]
                     for j, ticket in enumerate(ticket_list):
                         ticket_seat = ticket.get_seat_level(config.SEAT_TYPE)
@@ -62,17 +62,19 @@ if __name__ == '__main__':
                             train_no = j['train_no']
                             usable = j['usable']
                             seat_type = j['type']
-                            if usable != 'no' and usable != '--' and int(usable) > 0:
-                                usable_ticket = {'train_no': train_no, 'type': seat_type, 'seat_count': int(usable)}
+
+                            if usable == '--' or usable == 'no':
+                                usable = 0
+                            elif usable == 'yes':
+                                usable = 21
+                            usable = int(usable)
+                            if usable > 0:
+                                usable_ticket = {'train_no': train_no, 'type': seat_type, 'seat_count': usable}
                                 break
+                        else:
+                            continue
+                        break
                     if usable_ticket:
-                        log.info(
-                            'Find a suitable ticket: {}, seat type: {} seat count: {}'.format(usable_ticket['train_no'],
-                                                                                              seat_mapping.get(
-                                                                                                  usable_ticket[
-                                                                                                      'type']),
-                                                                                              usable_ticket[
-                                                                                                  'seat_count']))
                         order_ticket = None
                         for ticket in ticket_list:
                             if ticket.train_no == usable_ticket['train_no']:
@@ -81,12 +83,20 @@ if __name__ == '__main__':
                         order_ticket.seat_type = usable_ticket['type']
                         order_ticket.seat_count = usable_ticket['seat_count']
                         order = Order(order_ticket)
-                        log.info(order)
                         order.submit()
-                        log.info('Ticket order line is in progress,please wait...')
+                        log.info(order)
+                        log.info('车票订单提交成功，请稍后...')
                         order.order_callback()
                         break
                     else:
-                        log.warning('There is no proper ticket, prepare the next query {}'.format(count))
+                        log.warning('没有找到合适的车票，正尝试再次查询，查询次数: {}'.format(count))
                         time.sleep(1)
             break
+
+
+def start_thread_pool():
+    pool = threadpool.ThreadPool(10)
+    reqs = threadpool.makeRequests(None, None)
+    [pool.putRequest(req) for req in reqs]
+    pool.wait()
+    pass

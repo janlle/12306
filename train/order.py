@@ -32,11 +32,11 @@ class Order(object):
         self.from_station = config.FROM_STATION
         self.to_station = config.TO_STATION
         self.train_no = config.TRAINS_NO[0]
-        self.seat_type = config.SEAT_TYPE[0]
         self.date = config.DATE
         self.submit_token = None
         self.passenger_list = []
         self.ticket = ticket
+        self.real_passenger = []
 
     def submit(self):
         """提交车票信息"""
@@ -47,18 +47,19 @@ class Order(object):
         ticket_params['secretStr'] = util.decode_secret_str(self.ticket.secret_str)
         ticket_params['query_from_station_name'] = self.ticket.from_station
         ticket_params['query_to_station_name'] = self.ticket.to_station
-        submit_order_response = api.post(submit_url, data=ticket_params)
-        if submit_order_response and submit_order_response.json()['httpstatus'] == 200:
+        submit_order_response = api.post(submit_url, data=ticket_params).json()
+        if submit_order_response['httpstatus'] == 200:
             # get submit token
             self.submit_token = self.get_submit_token()
             # 获取乘车人
             if len(self.passenger_names) > self.ticket.seat_count:
-                self.passenger_list = self.get_passenger(self.passenger_names[0:self.ticket.seat_count])
+                self.real_passenger = self.passenger_names[0:self.ticket.seat_count]
+                self.passenger_list = self.get_passenger(self.real_passenger)
             else:
                 self.passenger_list = self.get_passenger(self.passenger_names)
             self.check_order(self.ticket.seat_type)
         else:
-            log.info('submit order error')
+            log.info(submit_order_response.get('message', 'Submit order error'))
 
     def check_order(self, seat_type):
         """
@@ -170,11 +171,9 @@ class Order(object):
         request_params['train_location'] = ticket_info_for_passenger_form['train_location']
         request_params['train_no'] = ticket_info_for_passenger_form['queryLeftTicketRequestDTO']['train_no']
         request_params['REPEAT_SUBMIT_TOKEN'] = self.submit_token['repeat_submit_token']
-        query_count = api.post(request_url, data=request_params)
-        if query_count and query_count.json()['httpstatus'] == 200:
-            log.info('get Queue Count success')
-        else:
-            log.error('get_query_count error')
+        query_count = api.post(request_url, data=request_params).json()
+        if query_count['httpstatus'] != 200 and not query_count['status']:
+            log.info('get_query_count failed')
 
     def confirm_submit(self, seat_type):
         """
@@ -203,10 +202,8 @@ class Order(object):
         request_params['leftTicketStr'] = ticket_info_for_passenger_form['leftTicketStr']
         request_params['REPEAT_SUBMIT_TOKEN'] = self.submit_token['repeat_submit_token']
 
-        confirm_submit_response = api.post(request_url, data=request_params)
-        if confirm_submit_response:
-            log.info('confirm submit success')
-        else:
+        confirm_submit_response = api.post(request_url, data=request_params).json()
+        if confirm_submit_response.get('data') and not confirm_submit_response.get('data').get('submitStatus'):
             log.error('confirm_submit error')
 
     def order_callback(self):
@@ -220,15 +217,16 @@ class Order(object):
                     log.info('下单成功,请登录 12306 订单中心 -> 火车票订单 -> 未完成订单，支付订单!')
                     break
                 else:
-                    count += 1
                     log.info('购票结果查询中，第 {} 次查询...'.format(count))
+                    count += 1
             else:
                 log.info('下单失败')
-            time.sleep(2)
+            time.sleep(5)
 
     def __str__(self):
         return '[乘车人: %s, 出发站: %s, 到达站: %s, 车次: %s, 座位: %s, 出发时间: %s %s:00]' % (
-            self.passenger_names, self.from_station, self.to_station, self.train_no, self.seat_type, self.date,
+            self.real_passenger, self.from_station, self.to_station, self.train_no,
+            self.ticket.get_seat_name(self.ticket.seat_type), self.date,
             self.ticket.leave_time)
 
     def search_unfinished_order(self):
