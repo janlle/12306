@@ -4,9 +4,12 @@ import datetime
 
 import prettytable
 import config.stations as stations
-import config.urls as urls
+from config.urls import URLS
 import requests
 from util.cache import cache
+from util.net_util import api
+import random
+from sprider.free_proxy import proxy
 
 ticket_data_index = {
     # 车次: 3
@@ -474,10 +477,11 @@ class Ticket(object):
                      train_date=(datetime.datetime.now() + datetime.timedelta(days=1)).strftime('%Y-%m-%d'),
                      purpose='ADULT', train_no=None):
         """查询车票"""
-        url = urls.URLS.get('ticket_query').get('request_url').format(train_date, stations.get_by_name(from_station),
-                                                                      stations.get_by_name(to_station), purpose)
+        url = URLS.get('ticket_query').get('request_url').format(train_date, stations.get_by_name(from_station),
+                                                                 stations.get_by_name(to_station), purpose)
         while True:
-            response_search = requests.get(url, verify=False, cookies=cache).json()
+            response_search = api.single_get(url, cookies=cache).json()
+            # response_search = requests.get(url, verify=False, cookies=cache).json()
             if not response_search['status']:
                 word = response_search['c_url'][11:]
                 text = url[url.rfind('/') + 1:url.find('?')]

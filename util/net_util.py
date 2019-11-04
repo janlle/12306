@@ -9,6 +9,7 @@ import util.logger as logger
 from sprider.free_proxy import proxy
 from util.app_util import get_root_path
 import random
+import tickst_config as config
 
 cookie_path = get_root_path() + '/cookie.txt'
 urllib3.disable_warnings()
@@ -22,7 +23,10 @@ class Http(object):
         self.session = requests.Session()
         self.timeout = timeout
         self.retry_num = retry
-        self.proxy_list = proxy.get_usable_proxy(5)
+        if config.USE_PROXY:
+            self.proxy_list = proxy.get_usable_proxy(5)
+        else:
+            self.proxy_list = [None]
         self.session.headers = {'User-Agent': UserAgent().random, 'Accept': '*/*'}
 
     def get(self, url, headers=None, data=None):
@@ -60,6 +64,9 @@ class Http(object):
                                     timeout=self.timeout,
                                     allow_redirects=False
                                     )
+
+    def single_get(self, url, headers=None, cookies=None):
+        return requests.get(url, verify=False, cookies=cookies, proxies=random.choice(self.proxy_list))
 
     @staticmethod
     def save_cookie():
