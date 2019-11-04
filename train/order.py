@@ -6,10 +6,12 @@ import time
 
 import util.app_util as util
 from train.passenger import Passenger
-from train.search_stack import *
 from util.logger import Logger
 from util.net_util import api
 import tickst_config as config
+from config.urls import URLS as urls
+import config.stations as stations
+from train.ticket import Ticket
 
 log = Logger(__name__)
 api.load_cookie()
@@ -18,14 +20,14 @@ api.load_cookie()
 class Order(object):
 
     def __init__(self, ticket):
-        self.submit_order_request_url = urls.URLS.get('submit_order_request_url')
-        self.passenger_url = urls.URLS.get('passenger_url')
-        self.check_order_info = urls.URLS.get('check_order_info')
-        self.init_dc_url = urls.URLS.get('init_dc_url')
-        self.queue_count = urls.URLS.get('queue_count')
-        self.confirm_submit_url = urls.URLS.get('confirm_submit_url')
-        self.order_callback_url = urls.URLS.get('order_callback_url')
-        self.unfinished_order_url = urls.URLS.get('unfinished_order_url')
+        self.submit_order_request_url = urls.get('submit_order_request_url')
+        self.passenger_url = urls.get('passenger_url')
+        self.check_order_info = urls.get('check_order_info')
+        self.init_dc_url = urls.get('init_dc_url')
+        self.queue_count = urls.get('queue_count')
+        self.confirm_submit_url = urls.get('confirm_submit_url')
+        self.order_callback_url = urls.get('order_callback_url')
+        self.unfinished_order_url = urls.get('unfinished_order_url')
         self.passenger_names = config.USER
         if len(self.passenger_names) < 1:
             raise BaseException('passenger must be not null')

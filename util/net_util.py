@@ -1,15 +1,14 @@
 # coding:utf-8
 
 from http import cookiejar
-from urllib import parse
-
 import requests
 import urllib3
 from fake_useragent import UserAgent
 
 import util.logger as logger
-from sprider.get_proxy import ProxySpider
+from sprider.free_proxy import proxy
 from util.app_util import get_root_path
+import random
 
 cookie_path = get_root_path() + '/cookie.txt'
 urllib3.disable_warnings()
@@ -23,15 +22,13 @@ class Http(object):
         self.session = requests.Session()
         self.timeout = timeout
         self.retry_num = retry
-        self.proxy_spider = ProxySpider()
-        # self.proxy = self.proxy_spider.get_able_proxy()
+        self.proxy_list = proxy.get_usable_proxy(5)
         self.session.headers = {'User-Agent': UserAgent().random, 'Accept': '*/*'}
-        self.proxy = None
 
     def get(self, url, headers=None, data=None):
         try:
             response = self.session.get(url=url, data=data, headers=headers, timeout=self.timeout, verify=False,
-                                        allow_redirects=False, proxies=self.proxy)
+                                        allow_redirects=False, proxies=random.choice(self.proxy_list))
             if response.status_code == 200:
                 return response
             else:
@@ -44,7 +41,7 @@ class Http(object):
         try:
             response = self.session.post(url=url, data=data, json=json, headers=headers, timeout=self.timeout,
                                          verify=False,
-                                         allow_redirects=False, proxies=self.proxy)
+                                         allow_redirects=False, proxies=random.choice(self.proxy_list))
             if response.status_code == 200:
                 return response
             else:
@@ -57,7 +54,7 @@ class Http(object):
         return self.session.request(method=method,
                                     url=url,
                                     params=params,
-                                    proxies=self.proxy,
+                                    proxies=random.choice(self.proxy_list),
                                     data=data,
                                     headers=headers,
                                     timeout=self.timeout,
@@ -96,5 +93,6 @@ class Http(object):
 api = Http()
 
 if __name__ == '__main__':
-    r = api.get('https://kyfw.12306.cn/passport/captcha/captcha-check?answer=40,77&rand=sjrand&login_site=E&_=1572501115466')
+    r = api.get(
+        'https://kyfw.12306.cn/passport/captcha/captcha-check?answer=40,77&rand=sjrand&login_site=E&_=1572501115466')
     print(r.json())

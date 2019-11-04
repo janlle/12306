@@ -8,12 +8,12 @@ start rob task good luck!
 
 from util.logger import Logger
 from train.login import Login
-from train.search_stack import *
 import tickst_config as config
 import util.app_util as util
 import time
 from train.order import Order
 import threadpool
+from train.ticket import Ticket
 
 log = Logger(__name__)
 
@@ -44,12 +44,12 @@ if __name__ == '__main__':
                 break
             count = 0
             while True:
-                ticket_list = search_stack(from_station=config.FROM_STATION, to_station=config.TO_STATION,
-                                           train_date=config.DATE)
+                ticket_list = Ticket.search_stack(from_station=config.FROM_STATION, to_station=config.TO_STATION,
+                                                  train_date=config.DATE)
                 count += 1
                 if config.SEAT_TYPE:
                     ticket_list = [i for i in ticket_list if i.train_no in config.TRAINS_NO]
-                    show_tickets(ticket_list)
+                    Ticket.show_tickets(ticket_list)
                     seat_level_all = [([0] * len(config.TRAINS_NO)) for i in range(len(config.SEAT_TYPE))]
                     for j, ticket in enumerate(ticket_list):
                         ticket_seat = ticket.get_seat_level(config.SEAT_TYPE)

@@ -4,7 +4,7 @@ import bs4
 import requests
 from fake_useragent import UserAgent
 from util.logger import Logger
-import config.urls as urls
+from config.urls import URLS
 from util.app_util import proxy_test, current_date_time
 from util.sqlite_helper import SqliteHelper
 
@@ -14,7 +14,7 @@ log = Logger(__name__)
 class ProxySpider(object):
 
     def __init__(self):
-        self.free_proxy_url = urls.URLS.get('free_proxy_url')
+        self.free_proxy_url = URLS.get('free_proxy_url')
         self.proxy_list = []
         self.sqlite = SqliteHelper()
 
@@ -44,11 +44,13 @@ class ProxySpider(object):
     def get_all_proxy(self):
         return self.sqlite.select('select * from t_proxy')
 
-    def get_able_proxy(self):
-        result = {}
+    def get_usable_proxy(self, count=1):
+        result = []
         for p in self.get_all_proxy():
-            if proxy_test({'ip': p['ip'], 'port': p['port']}):
-                result = {'https': 'https://{}:{}'.format(p['ip'], p['port'])}
+            if len(result) < count:
+                if proxy_test({'ip': p['ip'], 'port': p['port']}):
+                    result.append({'https': 'https://{}:{}'.format(p['ip'], p['port'])})
+            else:
                 break
         if not result:
             self.spider()
@@ -59,6 +61,7 @@ class ProxySpider(object):
         self.sqlite.delete('delete from t_proxy')
 
 
+proxy = ProxySpider()
+
 if __name__ == '__main__':
-    spider = ProxySpider()
-    print(spider.get_able_proxy())
+    print(proxy.get_usable_proxy(5))
