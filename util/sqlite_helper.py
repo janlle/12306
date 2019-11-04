@@ -1,6 +1,6 @@
 # coding:utf-8
 
-from util.app_util import proxy_test, get_root_path
+from util.app_util import get_root_path
 import sqlite3
 
 

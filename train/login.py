@@ -12,6 +12,7 @@ import tickst_config as config
 from config.stations import get_by_name
 from util.app_util import *
 from util.net_util import *
+from util.cache import cache
 from verify import verify_code
 import re
 
@@ -99,12 +100,14 @@ class Login(object):
 
         # second
         request_url = self.conf_url.get('request_url')
-        api.post(request_url)
+        res = api.post(request_url)
+        cache['BIGipServerotn'] = res.cookies.get_dict().get('BIGipServerotn', None)
 
         # third
         request_url = self.check_login_url.get('request_url')
         request_params = self.check_login_url.get('params')
-        api.post(request_url, data=request_params)
+        res = api.post(request_url, data=request_params)
+        cache['BIGipServerpool_passport'] = res.cookies.get_dict().get('BIGipServerpool_passport', None)
 
         # fourth
         request_url = self.device_id_url.get('request_url').format(timestamp())
@@ -113,6 +116,8 @@ class Login(object):
         try:
             device_info = json.loads(device_info_response.text[18:-2])
             api.set_cookie(RAIL_DEVICEID=device_info.get('dfp'), RAIL_EXPIRATION=device_info.get('exp'))
+            cache['RAIL_DEVICEID'] = device_info.get('dfp', None)
+            cache['RAIL_EXPIRATION'] = str(current_timestamp())
         except Exception as e:
             log.error(e)
             log.error('Failed to obtain device fingerprint')
