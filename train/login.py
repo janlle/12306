@@ -8,7 +8,6 @@ from urllib.parse import quote
 from PIL import Image
 
 import config.urls as urls
-import tickst_config as config
 from config.stations import get_by_name
 from util.app_util import *
 from util.net_util import *

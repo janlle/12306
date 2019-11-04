@@ -73,4 +73,5 @@ if __name__ == "__main__":
     # print(res.cookies.get_dict().get('BIGipServerotn', None))
     l = ['a', 'b', 'c']
     import random
-    print(random.choice(l))
+
+    print(random.choice([None]))
