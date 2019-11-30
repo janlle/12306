@@ -17,18 +17,6 @@ from train.ticket import Ticket
 
 log = Logger(__name__)
 
-seat_mapping = {
-    0: '无座',
-    1: '硬座',
-    2: '软座',
-    3: '硬卧',
-    4: '动卧',
-    5: '软卧',
-    6: '高级软卧',
-    7: '二等座',
-    8: '一等座',
-    9: '商务座',
-}
 
 if __name__ == '__main__':
     login = Login()
