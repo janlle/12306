@@ -13,6 +13,7 @@ from util.app_util import *
 from util.net_util import *
 from util.cache import cache
 from verify import verify_code
+from requests import get, post
 import re
 
 log = logger.Logger(__name__)
@@ -129,7 +130,8 @@ class Login(object):
         try:
             request_url = self.uamtk_url.get('request_url')
             request_params = self.uamtk_url.get('params')
-            response = api.post(request_url, data=request_params).json()
+            h = {"Referer": "https://www.12306.cn/index/", "Origin": "https://www.12306.cn"}
+            response = api.post(request_url, headers=h, data=request_params).json()
             if response['result_code'] == 0:
                 request_url = self.uamauthclient_url.get('request_url')
                 request_params = self.uamauthclient_url.get('params')
@@ -149,7 +151,7 @@ class Login(object):
         :return:
         """
         # 获取一个图片验证码
-        base64_code = self.get_captcha()
+        base64_code, cookies = self.get_captcha()
         # 获取验证码坐标
         location = []
         if auto_identify == 0:
@@ -176,7 +178,9 @@ class Login(object):
         # 校验验证码 parse.quote(self.answer)
         request_url = self.check_captcha_url.get('request_url').format(self.answer, timestamp())
 
-        check_captcha_response = api.get(request_url).json()
+        # check_captcha_response = api.get(request_url).json()
+        check_captcha_response = get(request_url, verify=False, cookies=cookies, allow_redirects=False).json()
+
         log.info(check_captcha_response['result_message'])
 
     def get_captcha(self):
@@ -184,7 +188,8 @@ class Login(object):
         Get a 12306 captcha
         """
         request_url = self.captcha_url.get('request_url')
-        return api.get(request_url).json()['image']
+        res = get(request_url, verify=False)
+        return res.json()['image'], res.cookies.get_dict()
 
     def coordinate(self, options=None):
         """获取验证码选项坐标"""

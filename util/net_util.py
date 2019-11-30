@@ -10,6 +10,7 @@ from sprider.free_proxy import proxy
 from util.app_util import get_root_path
 import random
 import tickst_config as config
+from requests import Request, Session
 
 cookie_path = get_root_path() + '/cookie.txt'
 urllib3.disable_warnings()
@@ -20,7 +21,7 @@ log = logger.Logger(__name__)
 class Http(object):
 
     def __init__(self, timeout=1000, retry=3):
-        self.session = requests.Session()
+        self.session = Session()
         self.timeout = timeout
         self.retry_num = retry
         if config.USE_PROXY:
@@ -43,6 +44,10 @@ class Http(object):
 
     def post(self, url, json=None, headers=None, data=None):
         try:
+            # req = Request('POST', url, json=json, data=data, headers=headers)
+            # prepped = req.prepare()
+            # response = self.session.send(prepped)
+
             response = self.session.post(url=url, data=data, json=json, headers=headers, timeout=self.timeout,
                                          verify=False,
                                          allow_redirects=False, proxies=random.choice(self.proxy_list))
