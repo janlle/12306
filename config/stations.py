@@ -4,6 +4,9 @@ import time
 
 from fake_useragent import UserAgent
 from requests import get
+import urllib3
+
+urllib3.disable_warnings()
 
 u = UserAgent()
 
@@ -392,12 +395,11 @@ def get_by_name(name):
 
 # Í¬²½³µÕ¾
 def async_station():
-    print("async")
-    for i in range(10050, 50000):
+    for i in range(10053, 50000):
         response = get('https://www.12306.cn/index/script/core/common/station_name_v{0}.js'.format(i),
                        allow_redirects=False, headers={'User-Agent': u.random, 'Host': 'www.12306.cn',
-                                                       'Referer': 'https://www.12306.cn/index/'})
-        time.sleep(1)
+                                                       'Referer': 'https://www.12306.cn/index/'}, verify=False)
+        time.sleep(0.3)
         if response.status_code == 200:
             data = response.text[20:-2]
             res = {}
