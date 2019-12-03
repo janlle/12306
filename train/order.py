@@ -9,12 +9,11 @@ from train.passenger import Passenger
 from util.logger import Logger
 from util.net_util import api
 import tickst_config as config
-from config.urls import URLS as urls
+from config.url_config import URLS as urls
 import config.stations as stations
 from train.ticket import Ticket
 
 log = Logger(__name__)
-api.load_cookie()
 
 
 class Order(object):

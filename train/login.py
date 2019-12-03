@@ -7,14 +7,12 @@ from urllib.parse import quote
 
 from PIL import Image
 
-import config.urls as urls
 from config.stations import get_by_name
+from config.url_config import URLS
 from util.app_util import *
-from util.net_util import *
 from util.cache import cache
+from util.net_util import *
 from verify import verify_code
-from requests import get, post
-import re
 
 log = logger.Logger(__name__)
 urllib3.disable_warnings()
@@ -34,16 +32,16 @@ class Login(object):
     def __init__(self):
         self.account, self.password = config.ACCOUNT, config.PASSWORD
         self.auto_identify = config.CAPTCHA_IDENTIFY
-        self.captcha_url = urls.URLS.get('captcha_url')
-        self.device_id_url = urls.URLS.get('devices_id_url')
-        self.check_login_url = urls.URLS.get('check_login_url')
-        self.conf_url = urls.URLS.get('conf_url')
-        self.login_url = urls.URLS.get('login_url')
-        self.iconfont_url = urls.URLS.get('iconfont_url')
-        self.check_captcha_url = urls.URLS.get('check_captcha_url')
-        self.captcha_url = urls.URLS.get('captcha_url')
-        self.uamtk_url = urls.URLS.get('uamtk_url')
-        self.uamauthclient_url = urls.URLS.get('uamauthclient_url')
+        self.captcha_url = URLS.get('captcha_url')
+        self.device_id_url = URLS.get('devices_id_url')
+        self.check_login_url = URLS.get('check_login_url')
+        self.conf_url = URLS.get('conf_url')
+        self.login_url = URLS.get('login_url')
+        self.iconfont_url = URLS.get('iconfont_url')
+        self.check_captcha_url = URLS.get('check_captcha_url')
+        self.captcha_url = URLS.get('captcha_url')
+        self.uamtk_url = URLS.get('uamtk_url')
+        self.uamauthclient_url = URLS.get('uamauthclient_url')
         self.answer = ''
 
     def login(self):
@@ -52,28 +50,30 @@ class Login(object):
             return
         login_count = 0
 
-        api.clear_cookie()
-        api.set_cookie(m=fake_cookie)
+        clear_local_cookie()
+
         self.init_cookie()
-
-        request_url = self.login_url.get('request_url')
-
-        request_params = self.login_url.get('params')
-        request_params['username'] = self.account
-        request_params['password'] = self.password
-        request_params['answer'] = self.answer
 
         while True:
             login_count += 1
+
+            # Check captcha
             self.check_captcha(self.auto_identify)
-            # start login
+
+            # Start login
             try:
+                request_url = self.login_url.get('request_url')
+                request_params = self.login_url.get('params')
+                request_params['username'] = self.account
+                request_params['password'] = self.password
+                request_params['answer'] = self.answer
+
                 login_response = api.post(request_url, data=request_params).json()
+
                 message = login_response['result_message']
                 if login_response['result_code'] == 0:
                     log.info('{}，共登录 {} 次'.format(message, login_count))
                     self.check_login_status()
-                    api.save_cookie()
                     break
                 else:
                     log.error(login_response['result_message'])
@@ -96,31 +96,27 @@ class Login(object):
         """
         # first
         request_url = self.iconfont_url.get('request_url').format(timestamp())
-        api.get(request_url)
+        res = api.single_get(request_url)
 
         # second
         request_url = self.conf_url.get('request_url')
-        res = api.post(request_url)
-        cache['BIGipServerotn'] = res.cookies.get_dict().get('BIGipServerotn', None)
+        res = api.single_post(request_url)
 
         # third
         request_url = self.check_login_url.get('request_url')
         request_params = self.check_login_url.get('params')
-        res = api.post(request_url, data=request_params)
-        cache['BIGipServerpool_passport'] = res.cookies.get_dict().get('BIGipServerpool_passport', None)
+        h = {"Referer": "https://www.12306.cn/index/", "Origin": "https://www.12306.cn"}
+        res = api.single_post(request_url, data=request_params, headers=h)
 
         # fourth
         request_url = self.device_id_url.get('request_url').format(timestamp())
-        device_info_response = api.get(request_url)
+        device_info_response = api.single_get(request_url)
 
         try:
             device_info = json.loads(device_info_response.text[18:-2])
-            api.set_cookie(RAIL_DEVICEID=device_info.get('dfp'), RAIL_EXPIRATION=device_info.get('exp'))
-            cache['RAIL_DEVICEID'] = device_info.get('dfp', None)
-            cache['RAIL_EXPIRATION'] = str(current_timestamp())
+            save_cookie(RAIL_DEVICEID=device_info.get('dfp'), RAIL_EXPIRATION=device_info.get('exp'))
         except Exception as e:
-            log.error(e)
-            log.error('Failed to obtain device fingerprint')
+            log.error('Failed to obtain device fingerprint ' + str(e))
 
     def check_login_status(self):
         """
@@ -141,6 +137,8 @@ class Login(object):
                     log.info('{}，用户名: {}'.format(response.get('result_message'), response.get('username')))
                 else:
                     log.info(response.get('result_message', 'error'))
+            elif response['result_code'] == 1:
+                log.error(response['result_message'])
         except BaseException as e:
             log.error(e)
 
@@ -174,12 +172,10 @@ class Login(object):
 
         # 识别图片正确选项的坐标
         self.coordinate(location)
-
         # 校验验证码 parse.quote(self.answer)
         request_url = self.check_captcha_url.get('request_url').format(self.answer, timestamp())
 
-        # check_captcha_response = api.get(request_url).json()
-        check_captcha_response = get(request_url, verify=False, cookies=cookies, allow_redirects=False).json()
+        check_captcha_response = api.single_get(request_url, cookies=cookies).json()
 
         log.info(check_captcha_response['result_message'])
 
@@ -188,7 +184,7 @@ class Login(object):
         Get a 12306 captcha
         """
         request_url = self.captcha_url.get('request_url')
-        res = get(request_url, verify=False)
+        res = api.single_get(request_url)
         return res.json()['image'], res.cookies.get_dict()
 
     def coordinate(self, options=None):
@@ -229,4 +225,4 @@ class Login(object):
 if __name__ == '__main__':
     login = Login()
     login.login()
-    pass
+    # pass
