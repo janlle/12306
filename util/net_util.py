@@ -1,19 +1,20 @@
 # coding:utf-8
 
+import random
 from http import cookiejar
+
 import requests
 import urllib3
 from fake_useragent import UserAgent
+from requests import Session
 
+import tickst_config as config
 import util.logger as logger
 from sprider.free_proxy import proxy
 from util.app_util import get_root_path
-import random
-import tickst_config as config
-from requests import Request, Session
 
-cookie_path = get_root_path() + '/cookie.txt'
 urllib3.disable_warnings()
+cookie = cookiejar.LWPCookieJar(get_root_path() + '/cookie.txt')
 
 log = logger.Logger(__name__)
 
@@ -31,31 +32,31 @@ class Http(object):
         self.session.headers = {'User-Agent': UserAgent().random, 'Accept': '*/*'}
 
     def get(self, url, headers=None, data=None):
+        load_cookie()
         try:
             response = self.session.get(url=url, data=data, headers=headers, timeout=self.timeout, verify=False,
                                         allow_redirects=False, proxies=random.choice(self.proxy_list))
             if response.status_code == 200:
+                save_cookie(**response.cookies.get_dict())
                 return response
             else:
-                log.error("GET error status code: %d url: %s" % (response.status_code, url))
-                raise BaseException('get failed response status code is not 200')
+                raise BaseException(
+                    'Get request failed response status code is {} url: '.format(response.status_code, url))
         except Exception as e:
             log.error('GET ' + str(e) + ' url: ' + url)
 
     def post(self, url, json=None, headers=None, data=None):
+        load_cookie()
         try:
-            # req = Request('POST', url, json=json, data=data, headers=headers)
-            # prepped = req.prepare()
-            # response = self.session.send(prepped)
-
             response = self.session.post(url=url, data=data, json=json, headers=headers, timeout=self.timeout,
                                          verify=False,
                                          allow_redirects=False, proxies=random.choice(self.proxy_list))
             if response.status_code == 200:
+                save_cookie(**response.cookies.get_dict())
                 return response
             else:
-                log.error("POST error status code: %d url: %s" % (response.status_code, url))
-                raise BaseException('post failed response status code is not 200')
+                raise BaseException(
+                    'Post request failed response status code is %d url: %s' % (response.status_code, url))
         except Exception as e:
             log.error('POST ' + str(e) + ' url: ' + url)
 
@@ -71,35 +72,37 @@ class Http(object):
                                     )
 
     def single_get(self, url, headers=None, cookies=None):
-        return requests.get(url, verify=False, cookies=cookies, proxies=random.choice(self.proxy_list))
+        res = requests.get(url, verify=False, cookies=cookies, proxies=random.choice(self.proxy_list), headers=headers,
+                           allow_redirects=False)
+        save_cookie(**res.cookies.get_dict())
+        return res
 
-    @staticmethod
-    def save_cookie():
-        new_cookie = cookiejar.LWPCookieJar(cookie_path)
-        requests.utils.cookiejar_from_dict({c.name: c.value for c in api.session.cookies}, new_cookie)
-        new_cookie.save(cookie_path, ignore_discard=True, ignore_expires=True)
-        # log.info('save_cookie' + str(api.session.cookies.get_dict()))
+    def single_post(self, url, headers=None, cookies=None, data=None, json=None):
+        res = requests.post(url=url, headers=headers, cookies=cookies, data=data, json=json, verify=False,
+                            allow_redirects=False, proxies=random.choice(self.proxy_list))
+        save_cookie(**res.cookies.get_dict())
+        return res
 
-    @staticmethod
-    def load_cookie():
-        old_cookie = cookiejar.LWPCookieJar()
-        old_cookie.load(cookie_path, ignore_discard=True, ignore_expires=True)
-        api.session.cookies = requests.utils.cookiejar_from_dict(requests.utils.dict_from_cookiejar(old_cookie))
-        # log.info('load_cookie' + str(api.session.cookies.get_dict()))
 
-    @staticmethod
-    def set_cookie(m=None, **kwargs):
-        if m and isinstance(m, dict):
-            for k, v in m.items():
-                api.session.cookies.set(k, v)
-        else:
-            for k, v in kwargs.items():
-                api.session.cookies.set(k, v)
-        # log.info('set_cookie' + str(api.session.cookies.get_dict()))
+def save_cookie(**kwargs):
+    requests.utils.cookiejar_from_dict({k: v for k, v in kwargs.items()}, cookie)
+    cookie.save(ignore_discard=True, ignore_expires=True)
+    # log.info('save_cookie: ' + str(api.session.cookies.get_dict()))
 
-    @staticmethod
-    def clear_cookie(key=None):
-        api.session.cookies.set(key, None) if key else api.session.cookies.clear()
+
+def load_cookie():
+    cookie.load(ignore_discard=True, ignore_expires=True)
+    api.session.cookies = requests.utils.cookiejar_from_dict(requests.utils.dict_from_cookiejar(cookie))
+    # log.info('load_cookie: ' + str(api.session.cookies.get_dict()))
+
+
+def clear_local_cookie(key=None):
+    api.session.cookies.set(key, None) if key else api.session.cookies.clear()
+
+
+def clear_session_cookie():
+    cookie.clear()
+    cookie.save()
 
 
 api = Http()

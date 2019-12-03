@@ -4,7 +4,7 @@ import datetime
 
 import prettytable
 import config.stations as stations
-from config.urls import URLS
+from config.url_config import URLS
 import requests
 from util.cache import cache
 from util.net_util import api
@@ -480,8 +480,7 @@ class Ticket(object):
         url = URLS.get('ticket_query').get('request_url').format(train_date, stations.get_by_name(from_station),
                                                                  stations.get_by_name(to_station), purpose)
         while True:
-            response_search = api.single_get(url, cookies=cache).json()
-            # response_search = requests.get(url, verify=False, cookies=cache).json()
+            response_search = api.get(url).json()
             if not response_search['status']:
                 word = response_search['c_url'][11:]
                 text = url[url.rfind('/') + 1:url.find('?')]

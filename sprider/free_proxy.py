@@ -4,7 +4,7 @@ import bs4
 import requests
 from fake_useragent import UserAgent
 from util.logger import Logger
-from config.urls import URLS
+from config.url_config import URLS
 from util.app_util import proxy_test, current_date_time
 from util.sqlite_helper import SqliteHelper
 
