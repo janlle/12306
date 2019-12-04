@@ -8,7 +8,7 @@ start rob task good luck!
 
 from util.logger import Logger
 from train.login import Login
-import tickst_config as config
+import ticket_config as config
 import util.app_util as util
 import time
 from train.order import Order
