@@ -8,7 +8,7 @@ import urllib3
 from fake_useragent import UserAgent
 from requests import Session
 
-import tickst_config as config
+import ticket_config as config
 import util.logger as logger
 from sprider.free_proxy import proxy
 from util.app_util import get_root_path

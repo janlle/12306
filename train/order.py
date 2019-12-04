@@ -8,7 +8,7 @@ import util.app_util as util
 from train.passenger import Passenger
 from util.logger import Logger
 from util.net_util import api
-import tickst_config as config
+import ticket_config as config
 from config.url_config import URLS
 import config.stations as stations
 from train.ticket import Ticket
