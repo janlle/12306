@@ -11,7 +11,7 @@ import hashlib
 import base64
 
 GMT_FORMAT = '%a %b %d %Y %H:%M:%S GMT+0800 (中国标准时间)'
-locale.setlocale(locale.LC_CTYPE, 'chinese')
+# locale.setlocale(locale.LC_CTYPE, 'chinese')
 
 
 def get_root_path():

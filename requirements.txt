@@ -1,9 +1,10 @@
-colorlog
+Pillow
+fake_useragent
 requests
-numpy
-scipy
+BeautifulSoup4
 opencv-python
 keras
 tensorflow
+PyExecJS
 prettytable
-execjs
+threadpool
