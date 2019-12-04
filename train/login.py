@@ -1,7 +1,5 @@
 # coding:utf-8
 
-import base64
-import json
 from io import BytesIO
 from urllib.parse import quote
 
@@ -10,9 +8,9 @@ from PIL import Image
 from config.stations import get_by_name
 from config.url_config import URLS
 from util.app_util import *
-from util.cache import cache
 from util.net_util import *
 from verify import verify_code
+from train.logdevice import generate_advice
 
 log = logger.Logger(__name__)
 urllib3.disable_warnings()
@@ -109,11 +107,8 @@ class Login(object):
         res = api.single_post(request_url, data=request_params, headers=h)
 
         # fourth
-        request_url = self.device_id_url.get('request_url').format(timestamp())
-        device_info_response = api.single_get(request_url)
-
         try:
-            device_info = json.loads(device_info_response.text[18:-2])
+            device_info = generate_advice()
             save_cookie(RAIL_DEVICEID=device_info.get('dfp'), RAIL_EXPIRATION=device_info.get('exp'))
         except Exception as e:
             log.error('Failed to obtain device fingerprint ' + str(e))
