@@ -9,7 +9,7 @@ from train.passenger import Passenger
 from util.logger import Logger
 from util.net_util import api
 import tickst_config as config
-from config.url_config import URLS as urls
+from config.url_config import URLS
 import config.stations as stations
 from train.ticket import Ticket
 
@@ -19,17 +19,17 @@ log = Logger(__name__)
 class Order(object):
 
     def __init__(self, ticket):
-        self.submit_order_request_url = urls.get('submit_order_request_url')
-        self.passenger_url = urls.get('passenger_url')
-        self.check_order_info = urls.get('check_order_info')
-        self.init_dc_url = urls.get('init_dc_url')
-        self.queue_count = urls.get('queue_count')
-        self.confirm_submit_url = urls.get('confirm_submit_url')
-        self.order_callback_url = urls.get('order_callback_url')
-        self.unfinished_order_url = urls.get('unfinished_order_url')
+        self.submit_order_request_url = URLS.get('submit_order_request_url')
+        self.passenger_url = URLS.get('passenger_url')
+        self.check_order_info = URLS.get('check_order_info')
+        self.init_dc_url = URLS.get('init_dc_url')
+        self.queue_count = URLS.get('queue_count')
+        self.confirm_submit_url = URLS.get('confirm_submit_url')
+        self.order_callback_url = URLS.get('order_callback_url')
+        self.unfinished_order_url = URLS.get('unfinished_order_url')
         self.passenger_names = config.USER
         if len(self.passenger_names) < 1:
-            raise BaseException('passenger must be not null')
+            raise BaseException('Passenger must be not null')
         self.from_station = config.FROM_STATION
         self.to_station = config.TO_STATION
         self.train_no = config.TRAINS_NO[0]
@@ -50,7 +50,7 @@ class Order(object):
         ticket_params['query_to_station_name'] = self.ticket.to_station
         submit_order_response = api.post(submit_url, data=ticket_params).json()
         if submit_order_response['httpstatus'] == 200:
-            # get submit token
+            # Get submit token
             self.submit_token = self.get_submit_token()
             # 获取乘车人
             if len(self.passenger_names) > self.ticket.seat_count:
@@ -58,6 +58,7 @@ class Order(object):
                 self.passenger_list = self.get_passenger(self.real_passenger)
             else:
                 self.passenger_list = self.get_passenger(self.passenger_names)
+                self.real_passenger = self.passenger_names
             self.check_order(self.ticket.seat_type)
         else:
             log.info(submit_order_response.get('message', 'Submit order error'))
@@ -66,8 +67,7 @@ class Order(object):
         """
         :return:
         """
-        request_url = self.check_order_info.get('request_url')
-        request_params = self.check_order_info.get('params')
+
         passenger_ticket_str = ''
         old_passenger_str = ''
         for passenger in self.passenger_list:
@@ -76,11 +76,12 @@ class Order(object):
 
         passenger_ticket_str = passenger_ticket_str[0:-1]
 
+        request_params = self.check_order_info.get('params')
         request_params['passengerTicketStr'] = passenger_ticket_str
         request_params['oldPassengerStr'] = old_passenger_str
         request_params['REPEAT_SUBMIT_TOKEN'] = self.submit_token['repeat_submit_token']
 
-        check_order_response = api.post(request_url, data=request_params).json()
+        check_order_response = api.post(self.check_order_info.get('request_url'), data=request_params).json()
         if check_order_response.get('httpstatus') == 200:
             if check_order_response.get('data').get('submitStatus'):
                 self.get_query_count(seat_type)
@@ -98,7 +99,6 @@ class Order(object):
         """
         request_url = self.passenger_url.get('request_url')
         request_params = self.passenger_url.get('params')
-        # api.session.cookies.clear()
         request_params['REPEAT_SUBMIT_TOKEN'] = self.submit_token['repeat_submit_token']
         passengers_data = api.post(request_url, request_params)
         if passengers_data.status_code == 200:

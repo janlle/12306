@@ -26,7 +26,7 @@ def timestamp():
 
 
 def current_timestamp():
-    return int(round(time.time() * 1000))
+    return int(round(time.time()))
 
 
 def current_hour():
@@ -80,5 +80,5 @@ def sha256(content=None):
 
 
 if __name__ == '__main__':
-    print(sha256(
-        'aclcdsj2F1n0s0fe8i1l8a7A0c4638844d94bb3372dacbi4e5y8e05cd27s2i5uapeE3m0o4t3ld20n6Wco646sci035p3a7f8r1W0B5laganbd622asbp1T8mfme86729731cb20ac166s6r7v6i1Sbz5184txo9s00reSbrneaSaz02oxs1e8hxa9f0wtnrnDkialToosot3m1ZIns-ctdulhauEpiro9c1U5nfe0a1g3a5rbs6o7b0k5o7bda83u0efA0e2t5o8i0l3/8.8 7W5n3o2sfNI r0m0b wi367;5xi4a ap l0W.b0i3/038./6m(rHCM),klek eGic oL ThKo e377.5.t9K4e1e8pSAf)r6/ 34.n6We;S.a1tTD bw5d0ia(10e50a2l3zcMan9g5r6s576ed4l8c50dr7wae0L7n3u7gbed-1S9otkoepnSbceo18uetoDe3id1N1t1r1cbuekoosn2l1s0V0rxi4nejivnEe'))
+    print(timestamp())
+    print(current_timestamp())
