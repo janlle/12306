@@ -5,11 +5,8 @@ import datetime
 import prettytable
 import config.stations as stations
 from config.url_config import URLS
-import requests
-from util.cache import cache
 from util.net_util import api
-import random
-from sprider.free_proxy import proxy
+
 
 ticket_data_index = {
     # 车次: 3
@@ -114,8 +111,8 @@ class Ticket(object):
             9: self.business_seat
         }
         level.sort(reverse=True)
-        for l in level:
-            result.append({'train_no': self.train_no, 'type': l, 'usable': seat_map.get(l, 0)})
+        for i in level:
+            result.append({'train_no': self.train_no, 'type': i, 'usable': seat_map.get(i, 0)})
         return result
 
     @staticmethod

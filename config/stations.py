@@ -3,10 +3,11 @@ import re
 import time
 
 from fake_useragent import UserAgent
-from requests import get
-import urllib3
 
-urllib3.disable_warnings()
+from util.logger import Logger
+from util.net_util import api
+
+log = Logger('INFO')
 
 u = UserAgent()
 
@@ -396,11 +397,12 @@ def get_by_name(name):
 # 同步车站
 def async_station():
     for i in range(10053, 50000):
-        response = get('https://www.12306.cn/index/script/core/common/station_name_v{0}.js'.format(i),
-                       allow_redirects=False, headers={'User-Agent': u.random, 'Host': 'www.12306.cn',
-                                                       'Referer': 'https://www.12306.cn/index/'}, verify=False)
+        response = api.single_get('https://www.12306.cn/index/script/core/common/station_name_v{0}.js'.format(i),
+                                  headers={'User-Agent': u.random, 'Host': 'www.12306.cn',
+                                           'Referer': 'https://www.12306.cn/index/'})
         time.sleep(0.3)
         if response.status_code == 200:
+            log.info('车站数据同步成功')
             data = response.text[20:-2]
             res = {}
             # 解析数据
@@ -408,7 +410,7 @@ def async_station():
                 res[station[1]] = station[0]
             global STATIONS
             STATIONS = res
-            return res
+            break
 
 
 async_station()

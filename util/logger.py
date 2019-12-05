@@ -1,50 +1,58 @@
 # coding:utf-8
 
 import logging
+import os
+import sys
+import time
+
 from util.app_util import get_root_path
 
 
-formatter = "%(asctime)s %(levelname)-9s %(process)-5d [line:%(lineno)3d]: %(message)s"
-log_path = get_root_path() + "/tickets.log"
+class Logger:
+    def __init__(self, log_level="INFO", name='12306', log_name=time.strftime("%Y-%m-%d.log", time.localtime()),
+                 log_path=get_root_path(), stdout=True):
+        """
+        :param log_level: 日志级别["NOTSET"|"DEBUG"|"INFO"|"WARNING"|"ERROR"|"CRITICAL"]，默认为INFO
+        :param name: 日志中打印的name，默认为运行程序的name
+        :param log_name: 日志文件的名字，默认为当前时间（年-月-日.log）
+        :param log_path: 日志文件夹的路径，默认为logger.py同级目录中的log文件夹
+        :param use_console: 是否在控制台打印，默认为True
+        """
 
+        self.__logger = logging.getLogger(name)
+        self.setLevel(
+            getattr(logging, log_level.upper()) if hasattr(logging, log_level.upper()) else logging.INFO)  # 设置日志级别
+        # 创建日志目录
+        if not os.path.exists(log_path):
+            os.makedirs(log_path)
 
-class Logger(object):
-    def __init__(self, name):
-        self.f = logging.Formatter(formatter)
-        # 创建一个屏幕输出流
-        ch = logging.StreamHandler()
+        if not self.handlers:
+            formatter = logging.Formatter(
+                "%(asctime)s %(levelname)-8s %(process)-5d - %(filename)-16s[line:%(lineno)3d]: %(message)s")
+            handler_list = [logging.FileHandler(os.path.join(log_path, log_name), encoding="utf-8")]
+            if stdout:
+                handler_list.append(logging.StreamHandler())
 
-        # 创建一个文件输出流
-        fh = logging.FileHandler(log_path)
+            for handler in handler_list:
+                handler.setFormatter(formatter)
+                self.addHandler(handler)
 
-        ch.setFormatter(self.f)
-        fh.setFormatter(self.f)
+    def __getattr__(self, item):
+        return getattr(self.logger, item)
 
-        self.logger = logging.getLogger(name)
-        self.logger.addHandler(ch)
-        self.logger.addHandler(fh)
-        self.logger.setLevel(logging.DEBUG)
+    @property
+    def logger(self):
+        return self.__logger
 
-    def info(self, message):
-        self.logger.info(message)
-
-    def critical(self, message):
-        self.logger.critical(message)
-
-    def debug(self, message):
-        self.logger.debug(message)
-
-    def warning(self, message):
-        self.logger.warning(message)
-
-    def error(self, message):
-        self.logger.error(message)
+    @logger.setter
+    def logger(self, func):
+        self.__logger = func
 
 
 if __name__ == '__main__':
-    log = Logger(__name__)
-    log.debug("hello info")
+    log = Logger('debug')
+    log.debug("hello debug")
     log.info("hello info")
-    log.error("hello info")
-    log.warning("hello info")
-    log.critical("hello info")
+    log.error("hello error")
+    log.warning("hello warning 日志")
+    log.critical("hello critical")

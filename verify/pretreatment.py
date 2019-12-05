@@ -4,9 +4,9 @@ import base64
 import hashlib
 import os
 import requests
-import util.logger as logger
+from util.logger import Logger
 
-log = logger.Logger(__name__)
+log = Logger('info')
 PATH = "images"
 
 

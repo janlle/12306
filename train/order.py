@@ -13,7 +13,7 @@ from config.url_config import URLS
 import config.stations as stations
 from train.ticket import Ticket
 
-log = Logger(__name__)
+log = Logger('info')
 
 
 class Order(object):
