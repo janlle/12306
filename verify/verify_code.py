@@ -5,9 +5,9 @@ import cv2
 import numpy as np
 from keras import models, backend
 import util.app_util as util
-import util.logger as logger
+from util.logger import Logger
 
-log = logger.Logger(__name__)
+log = Logger('info')
 
 
 def load_images(img):

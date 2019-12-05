@@ -1,7 +1,6 @@
 # coding:utf-8
 
 import datetime
-import locale
 import os
 import re
 import telnetlib
@@ -10,8 +9,10 @@ import urllib
 import hashlib
 import base64
 
+import locale
+
+locale.setlocale(locale.LC_CTYPE, 'chinese')
 GMT_FORMAT = '%a %b %d %Y %H:%M:%S GMT+0800 (中国标准时间)'
-# locale.setlocale(locale.LC_CTYPE, 'chinese')
 
 
 def get_root_path():
@@ -58,6 +59,7 @@ def proxy_test(proxy):
         telnetlib.Telnet(proxy.get('ip'), proxy.get('port'), timeout=1)
         return True
     except BaseException as e:
+        print(e)
         return False
 
 
@@ -81,4 +83,4 @@ def sha256(content=None):
 
 if __name__ == '__main__':
     print(timestamp())
-    print(current_timestamp())
+    print(get_gmt_time('2019-12-29'))

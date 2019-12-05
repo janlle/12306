@@ -1,28 +1,16 @@
 # coding:utf-8
 
 from io import BytesIO
-from urllib.parse import quote
-
 from PIL import Image
-
-from config.stations import get_by_name
 from config.url_config import URLS
 from util.app_util import *
 from util.net_util import *
 from verify import verify_code
 from train.logdevice import generate_advice
+from util.logger import Logger
+log = Logger('INFO')
 
-log = logger.Logger(__name__)
-urllib3.disable_warnings()
 captcha_temp_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/image_captcha/'
-
-fake_cookie = {
-    '_jc_save_fromStation': quote(config.FROM_STATION + ',' + get_by_name(config.FROM_STATION), 'utf-8'),
-    '_jc_save_toStation': quote(config.TO_STATION + ',' + get_by_name(config.FROM_STATION), 'utf-8'),
-    '_jc_save_fromDate': config.DATE,
-    '_jc_save_toDate': current_date(),
-    '_jc_save_wfdc_flag': 'dc'
-}
 
 
 class Login(object):
@@ -92,21 +80,21 @@ class Login(object):
         set device sign
         :return:
         """
-        # first
+        # First
         request_url = self.iconfont_url.get('request_url').format(timestamp())
-        res = api.single_get(request_url)
+        api.single_get(request_url)
 
-        # second
+        # Second
         request_url = self.conf_url.get('request_url')
-        res = api.single_post(request_url)
+        api.single_post(request_url)
 
-        # third
+        # Third
         request_url = self.check_login_url.get('request_url')
         request_params = self.check_login_url.get('params')
         h = {"Referer": "https://www.12306.cn/index/", "Origin": "https://www.12306.cn"}
-        res = api.single_post(request_url, data=request_params, headers=h)
+        api.single_post(request_url, data=request_params, headers=h)
 
-        # fourth
+        # Fourth
         try:
             device_info = generate_advice()
             save_cookie(RAIL_DEVICEID=device_info.get('dfp'), RAIL_EXPIRATION=device_info.get('exp'))
@@ -139,7 +127,7 @@ class Login(object):
 
     def check_captcha(self, auto_identify=0):
         """
-        check captcha
+        Check captcha
         :param auto_identify: is auto identify
         :return:
         """

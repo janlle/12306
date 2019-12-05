@@ -8,7 +8,7 @@ from config.url_config import URLS
 from util.app_util import proxy_test, current_date_time
 from util.sqlite_helper import SqliteHelper
 
-log = Logger(__name__)
+log = Logger('INFO')
 
 
 class ProxySpider(object):

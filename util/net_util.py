@@ -9,14 +9,14 @@ from fake_useragent import UserAgent
 from requests import Session
 
 import ticket_config as config
-import util.logger as logger
+from util.logger import Logger
 from sprider.free_proxy import proxy
 from util.app_util import get_root_path
 
 urllib3.disable_warnings()
 cookie = cookiejar.LWPCookieJar(get_root_path() + '/cookie.txt')
 
-log = logger.Logger(__name__)
+log = Logger('info')
 
 
 class Http(object):

@@ -53,6 +53,7 @@ if __name__ == '__main__':
 
                             if usable == '--' or usable == 'no':
                                 usable = 0
+
                             elif usable == 'yes':
                                 usable = 21
                             usable = int(usable)
