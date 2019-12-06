@@ -2,7 +2,6 @@
 
 import logging
 import os
-import sys
 import time
 
 from util.app_util import get_root_path
@@ -16,7 +15,7 @@ class Logger:
         :param name: 日志中打印的name，默认为运行程序的name
         :param log_name: 日志文件的名字，默认为当前时间（年-月-日.log）
         :param log_path: 日志文件夹的路径，默认为logger.py同级目录中的log文件夹
-        :param use_console: 是否在控制台打印，默认为True
+        :param stdout: 是否在控制台打印，默认为True
         """
 
         self.__logger = logging.getLogger(name)
