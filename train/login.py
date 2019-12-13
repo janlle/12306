@@ -115,7 +115,7 @@ class Login(object):
                 request_url = self.uamauthclient_url.get('request_url')
                 request_params = self.uamauthclient_url.get('params')
                 request_params['tk'] = response['newapptk']
-                response = api.post(request_url, data=request_params).json()
+                response = api.single_post(request_url, data=request_params).json()
                 if response.get('result_code') == 0:
                     log.info('{}，用户名: {}'.format(response.get('result_message'), response.get('username')))
                 else:
