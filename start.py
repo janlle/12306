@@ -14,16 +14,18 @@ import time
 from train.order import Order
 import threadpool
 from train.ticket import Ticket
+from sys import version_info
 
 log = Logger(__name__)
 
-
 if __name__ == '__main__':
+    if version_info.major != 3 or version_info.minor != 6:
+        log.error("请使用Python3.6版本运行此程序")
     login = Login()
     while True:
         hour = util.current_hour()
         if hour > 22 or hour < 6:
-            time.sleep(1)
+            time.sleep(1.5)
             continue
         else:
             login.login()
@@ -50,10 +52,8 @@ if __name__ == '__main__':
                             train_no = j['train_no']
                             usable = j['usable']
                             seat_type = j['type']
-
-                            if usable == '--' or usable == 'no':
+                            if usable == '--' or usable == 'no' or usable == '*':
                                 usable = 0
-
                             elif usable == 'yes':
                                 usable = 21
                             usable = int(usable)
