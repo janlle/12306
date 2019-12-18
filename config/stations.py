@@ -396,7 +396,7 @@ def get_by_name(name):
 
 # Í¬²½³µÕ¾
 def async_station():
-    for i in range(10053, 50000):
+    for i in range(10061, 50000):
         response = api.single_get('https://www.12306.cn/index/script/core/common/station_name_v{0}.js'.format(i),
                                   headers={'User-Agent': u.random, 'Host': 'www.12306.cn',
                                            'Referer': 'https://www.12306.cn/index/'})

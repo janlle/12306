@@ -8,6 +8,7 @@ import time
 import urllib
 import hashlib
 import base64
+from urllib.parse import quote
 
 import locale
 
@@ -54,6 +55,10 @@ def decode_secret_str(code):
     return urllib.parse.unquote(code).replace('\n', '')
 
 
+def url_encode(text):
+    return quote(text, 'utf-8')
+
+
 def proxy_test(proxy):
     try:
         telnetlib.Telnet(proxy.get('ip'), proxy.get('port'), timeout=1)
@@ -82,5 +87,6 @@ def sha256(content=None):
 
 
 if __name__ == '__main__':
-    print(timestamp())
-    print(get_gmt_time('2019-12-29'))
+    # print(timestamp())
+    # print(get_gmt_time('2019-12-29'))
+    print(url_encode('长沙,CSQ'))

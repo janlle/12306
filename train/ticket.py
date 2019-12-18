@@ -5,8 +5,10 @@ import datetime
 import prettytable
 import config.stations as stations
 from config.url_config import URLS
-from util.net_util import api
-
+from util.net_util import api, save_cookie
+from config.stations import get_by_name
+from util.app_util import current_date, url_encode
+import ticket_config as config
 
 ticket_data_index = {
     # 车次: 3
@@ -54,6 +56,12 @@ ticket_data_index = {
     # SECRET
     'INDEX_SECRET_STR': 0,
 }
+
+# save_cookie(_jc_save_fromDate=config.DATE,
+#             _jc_save_fromStation=url_encode(config.FROM_STATION + ',' + get_by_name(config.FROM_STATION)),
+#             _jc_save_toDate=current_date(),
+#             _jc_save_toStation=url_encode(config.TO_STATION + ',' + get_by_name(config.TO_STATION)),
+#             _jc_save_wfdc_flag='dc')
 
 
 class Ticket(object):
@@ -476,8 +484,13 @@ class Ticket(object):
         """查询车票"""
         url = URLS.get('ticket_query').get('request_url').format(train_date, stations.get_by_name(from_station),
                                                                  stations.get_by_name(to_station), purpose)
+        cookies = {'_jc_save_fromDate': config.DATE,
+                   '_jc_save_fromStation': url_encode(config.FROM_STATION + ',' + get_by_name(config.FROM_STATION)),
+                   '_jc_save_toDate': current_date(),
+                   '_jc_save_toStation': url_encode(config.TO_STATION + ',' + get_by_name(config.TO_STATION)),
+                   '_jc_save_wfdc_flag': 'dc'}
         while True:
-            response_search = api.get(url).json()
+            response_search = api.single_get(url, cookies=cookies).json()
             if not response_search['status']:
                 word = response_search['c_url'][11:]
                 text = url[url.rfind('/') + 1:url.find('?')]
@@ -559,6 +572,6 @@ class Ticket(object):
 
 
 if __name__ == '__main__':
-    res = Ticket.search_stack('武昌', '长沙', train_date='2019-11-03')
+    res = Ticket.search_stack('武汉', '长沙', train_date='2019-12-25')
     print(len(res))
     Ticket.show_tickets(res)

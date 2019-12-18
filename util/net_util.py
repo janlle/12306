@@ -41,7 +41,7 @@ class Http(object):
                 return response
             else:
                 raise BaseException(
-                    'Get request failed response status code is {} url: '.format(response.status_code, url))
+                    'Get request failed response status code is {0} url: {1}'.format(response.status_code, url))
         except Exception as e:
             log.error('GET ' + str(e) + ' url: ' + url)
 
