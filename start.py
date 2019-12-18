@@ -9,21 +9,41 @@ start rob task good luck!
 from util.logger import Logger
 from train.login import Login
 import ticket_config as config
-import util.app_util as util
-import time
 from train.order import Order
 import threadpool
-from train.ticket import Ticket
 from sys import version_info
+import datetime
+import time
+from config.stations import check_station_exists
+from train.ticket import Ticket
+from util.app_util import current_date, validate_date_str, current_hour
 
 log = Logger(__name__)
 
 if __name__ == '__main__':
     if version_info.major != 3 or version_info.minor != 6:
         log.error("请使用Python3.6版本运行此程序")
+
+    # Checking config information
+    if not validate_date_str(config.DATE):
+        log.error('出发时间格式不正确')
+        exit(0)
+
+    today = datetime.datetime.strptime(current_date(), '%Y-%m-%d')
+    depart_day = datetime.datetime.strptime(config.DATE, '%Y-%m-%d')
+    difference = (depart_day - today).days
+    if difference > 29 or difference < 0:
+        log.error('出发时间超出了12306的售票时间范围')
+        exit(0)
+
+    if not check_station_exists(config.FROM_STATION) or not check_station_exists(config.TO_STATION):
+        log.error('车站不存在')
+        exit(0)
+
+    time.sleep(20)
     login = Login()
     while True:
-        hour = util.current_hour()
+        hour = current_hour()
         if hour > 22 or hour < 6:
             time.sleep(1.5)
             continue

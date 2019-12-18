@@ -86,7 +86,16 @@ def sha256(content=None):
     return ""
 
 
+def validate_date_str(date_str):
+    try:
+        datetime.datetime.strptime(date_str, '%Y-%m-%d')
+        return True
+    except ValueError:
+        return False
+
+
 if __name__ == '__main__':
     # print(timestamp())
     # print(get_gmt_time('2019-12-29'))
-    print(url_encode('长沙,CSQ'))
+    # print(url_encode('长沙,CSQ'))
+    print(validate_date_str('2019-9-12'))

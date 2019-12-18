@@ -387,11 +387,12 @@ STATIONS = {'VAP': '北京北', 'BOP': '北京东', 'BJP': '北京', 'VNP': '北京南', 'B
 
 
 def get_by_code(code):
-    return STATIONS.get(code, "")
+    return STATIONS.get(code, None)
 
 
 def get_by_name(name):
-    return [k for k, v in STATIONS.items() if v == name][0]
+    station_name = [k for k, v in STATIONS.items() if v == name]
+    return station_name[0] if len(station_name) == 1 else None
 
 
 # 同步车站
@@ -413,8 +414,13 @@ def async_station():
             break
 
 
+def check_station_exists(name):
+    return False if get_by_name(name) is None else True
+
+
 async_station()
 
 if __name__ == '__main__':
     print(get_by_code('ZAZ'))
     print(get_by_name('武昌'))
+    print(check_station_exists(None))
