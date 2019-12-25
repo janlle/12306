@@ -18,7 +18,7 @@ from config.stations import check_station_exists
 from train.ticket import Ticket
 from util.app_util import current_date, validate_date_str, current_hour
 
-log = Logger(__name__)
+log = Logger('INFO')
 
 if __name__ == '__main__':
     if version_info.major != 3 or version_info.minor != 6:
