@@ -1,16 +1,15 @@
 # coding:utf-8
 
+import base64
 import datetime
+import hashlib
+import locale
 import os
 import re
 import telnetlib
 import time
 import urllib
-import hashlib
-import base64
 from urllib.parse import quote
-
-import locale
 
 locale.setlocale(locale.LC_CTYPE, 'chinese')
 GMT_FORMAT = '%a %b %d %Y %H:%M:%S GMT+0800 (中国标准时间)'
@@ -23,10 +22,12 @@ def get_root_path():
     return current_path[:current_path.find(project_name) + len(project_name)]
 
 
+# 13 位
 def timestamp():
     return int(round(time.time() * 1000))
 
 
+# 10 位
 def current_timestamp():
     return int(round(time.time()))
 
@@ -94,8 +95,22 @@ def validate_date_str(date_str):
         return False
 
 
+def validate_time_str(time_str):
+    try:
+        datetime.datetime.strptime(time_str, '%H:%M:%S')
+        return True
+    except ValueError:
+        return False
+
+
+def datetime_str_timestamp(datetime_str):
+    d = datetime.datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
+    return int(time.mktime(d.timetuple()))
+
+
 if __name__ == '__main__':
     # print(timestamp())
     # print(get_gmt_time('2019-12-29'))
     # print(url_encode('长沙,CSQ'))
-    print(validate_date_str('2019-9-12'))
+    print(datetime_str_timestamp('2019-12-27 23:59:00'))
+    print(current_timestamp())

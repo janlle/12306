@@ -11,6 +11,10 @@ from util.app_util import current_date, url_encode
 import ticket_config as config
 
 ticket_data_index = {
+    # Code
+    'INDEX_CODE': 0,
+    # 发售时间
+    'INDEX_SELL_TIME': 1,
     # 车次: 3
     'INDEX_TRAIN_NO': 3,
     # 起始站: 4
@@ -19,11 +23,11 @@ ticket_data_index = {
     'INDEX_TRAIN_END_STATION_CODE': 5,
     # 出发站: 6,
     'INDEX_TRAIN_FROM_STATION_CODE': 6,
-    # to_station_code:到达站: 7,
+    # 到达站: 7,
     'INDEX_TRAIN_TO_STATION_CODE': 7,
-    #  出发时间: 8,
+    # 出发时间: 8,
     'INDEX_TRAIN_LEAVE_TIME': 8,
-    # arrive_time:达到时间: 9,
+    # 达到时间: 9,
     'INDEX_TRAIN_ARRIVE_TIME': 9,
     # 历时: 10,
     'INDEX_TRAIN_TOTAL_CONSUME': 10,
@@ -57,16 +61,11 @@ ticket_data_index = {
     'INDEX_SECRET_STR': 0,
 }
 
-# save_cookie(_jc_save_fromDate=config.DATE,
-#             _jc_save_fromStation=url_encode(config.FROM_STATION + ',' + get_by_name(config.FROM_STATION)),
-#             _jc_save_toDate=current_date(),
-#             _jc_save_toStation=url_encode(config.TO_STATION + ',' + get_by_name(config.TO_STATION)),
-#             _jc_save_wfdc_flag='dc')
-
 
 class Ticket(object):
 
     def __init__(self):
+        self._sell_time = ''
         self._train_no = ''
         self._from_station = ''
         self._start_station = ''
@@ -142,6 +141,14 @@ class Ticket(object):
             9: '商务座'
         }
         return seat_map.get(key)
+
+    @property
+    def sell_time(self):
+        return self._sell_time
+
+    @sell_time.setter
+    def sell_time(self, value):
+        self._sell_time = value
 
     @property
     def train_no(self):
@@ -512,6 +519,9 @@ class Ticket(object):
             if train_no and ticket.train_no not in train_no:
                 continue
 
+            # Sell time
+            ticket.sell_time = ticket_item[ticket_data_index.get('INDEX_SELL_TIME')]
+
             ticket.start_station = stations.get_by_code(
                 ticket_item[ticket_data_index.get('INDEX_TRAIN_START_STATION_CODE')])
             ticket.end_station = stations.get_by_code(
@@ -572,6 +582,9 @@ class Ticket(object):
 
 
 if __name__ == '__main__':
-    res = Ticket.search_stack('武汉', '长沙', train_date='2019-12-25')
+    res = Ticket.search_stack('武汉', '广州', train_date='2020-01-25')
     print(len(res))
-    Ticket.show_tickets(res)
+    res = list(filter(lambda x: x.sell_time == '预订', res))
+    print(len(res))
+
+    # Ticket.show_tickets(res)

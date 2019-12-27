@@ -6,17 +6,20 @@ start rob task good luck!
 > python start.py
 """
 
-from util.logger import Logger
-from train.login import Login
-import ticket_config as config
-from train.order import Order
-import threadpool
-from sys import version_info
 import datetime
 import time
+from sys import version_info
+
+import threadpool
+
+import ticket_config as config
 from config.stations import check_station_exists
+from train.login import Login
+from train.order import Order
 from train.ticket import Ticket
-from util.app_util import current_date, validate_date_str, current_hour
+from util.app_util import current_date, validate_date_str, current_hour, current_timestamp, datetime_str_timestamp, \
+    validate_time_str
+from util.logger import Logger
 
 log = Logger('INFO')
 
@@ -40,7 +43,11 @@ if __name__ == '__main__':
         log.error('车站不存在')
         exit(0)
 
-    time.sleep(20)
+    if config.SELL_TIME != '':
+        if not validate_time_str(config.SELL_TIME):
+            log.error('车票开售时间格式不正确')
+            exit(0)
+
     login = Login()
     while True:
         hour = current_hour()
@@ -53,9 +60,26 @@ if __name__ == '__main__':
             if not order.search_unfinished_order():
                 break
             count = 0
+
+            # Sell time
+            if config.SELL_TIME != '':
+                start_time = datetime_str_timestamp(config.DATE + ' ' + config.SELL_TIME)
+                log.info('Waiting for sell ticket...')
+                while True:
+                    current_time = current_timestamp() + 2505600
+                    if start_time - current_time < 0:
+                        break
+                log.info('Starting...')
+
             while True:
                 ticket_list = Ticket.search_stack(from_station=config.FROM_STATION, to_station=config.TO_STATION,
                                                   train_date=config.DATE)
+                # Filter unable ticket
+                ticket_list = list(filter(lambda x: x.sell_time == '预订', ticket_list))
+                if len(ticket_list) < 1:
+                    log.info('暂无可预定车票')
+                    continue
+
                 count += 1
                 if config.SEAT_TYPE:
                     ticket_list = [i for i in ticket_list if i.train_no in config.TRAINS_NO]
