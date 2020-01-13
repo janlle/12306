@@ -9,9 +9,12 @@ import re
 import telnetlib
 import time
 import urllib
+import platform
 from urllib.parse import quote
 
-locale.setlocale(locale.LC_CTYPE, 'chinese')
+if platform.system() == 'Windows':
+    locale.setlocale(locale.LC_CTYPE, 'chinese')
+
 GMT_FORMAT = '%a %b %d %Y %H:%M:%S GMT+0800 (中国标准时间)'
 
 
